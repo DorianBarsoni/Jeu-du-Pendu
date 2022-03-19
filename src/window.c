@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     //SDL_Texture* texture2 = NULL;
 
 
-    surface = SDL_LoadBMP("C:\\Users\\dbars\\Desktop\\Developpement C-C++\\images\\bleu.bmp");
+    surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
     //surface2 = SDL_LoadBMP("images/rouge.bmp");
     if(surface == NULL)
     {
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
         if(rectangle.x<x && x<rectangle.x+100 && rectangle.y<y && y<rectangle.y+100 && !over)
         {
             SDL_Surface *surface = NULL;
-            surface = SDL_LoadBMP("C:\\Users\\dbars\\Desktop\\Developpement C-C++\\images\\rouge.bmp");
+            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\rouge.bmp");
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_FreeSurface(surface);
             over = true;
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
         if(!(rectangle.x<x && x<rectangle.x+100 && rectangle.y<y && y<rectangle.y+100) && over)
         {
             SDL_Surface *surface = NULL;
-            surface = SDL_LoadBMP("C:\\Users\\dbars\\Desktop\\Developpement C-C++\\images\\bleu.bmp");
+            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_FreeSurface(surface);
             over = false;
