@@ -118,6 +118,34 @@ int main(int argc, char** argv)
                         case SDLK_d :
                             dir[3] = true;
                             break;
+                        case SDLK_a :
+                            SDL_Surface *surface = NULL;
+                            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\a.bmp");
+                            texture = SDL_CreateTextureFromSurface(renderer, surface);
+                            SDL_FreeSurface(surface);
+                            printf("A\n");
+                            break;
+                        case SDLK_b :
+                            surface = NULL;
+                            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\b.bmp");
+                            texture = SDL_CreateTextureFromSurface(renderer, surface);
+                            SDL_FreeSurface(surface);
+                            printf("B\n");
+                            break;
+                        case SDLK_c :
+                            surface = NULL;
+                            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\c.bmp");
+                            texture = SDL_CreateTextureFromSurface(renderer, surface);
+                            SDL_FreeSurface(surface);
+                            printf("C\n");
+                            break;
+                        case SDLK_e :
+                            surface = NULL;
+                            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\e.bmp");
+                            texture = SDL_CreateTextureFromSurface(renderer, surface);
+                            SDL_FreeSurface(surface);
+                            printf("E\n");
+                            break;
                         default :
                             break;
                     }
