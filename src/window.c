@@ -7,22 +7,76 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 640
 
+SDL_Window *window;
+SDL_Renderer *renderer;
+SDL_Surface *surface;
+SDL_Texture *texture;
+SDL_Rect rectangle;
+SDL_Event event;
+bool running;
+bool dir[4];
+bool over = false;
+
 void exitWithError(char* error);
+void initWindow();
+void loadSprite(char* sprite);
+void setSpritePos(int x, int y);
+void setSpriteSize(int w, int h);
+void initVariables();
+void treatEvents(SDL_Event event);
+void updateSpritePos();
+void checkMouseOver(SDL_Rect rec);
+void printRenderer();
 
 int main(int argc, char** argv)
 {
-    int step = 0;
+    initWindow();
+    loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
+    setSpritePos(WINDOW_WIDTH/2 - 100/2, WINDOW_HEIGHT/2 - 100/2);
+    setSpriteSize(-1, -1);
+    initVariables();
+    int i=0;
 
+    while(running)
+    {
+        treatEvents(event);
+        updateSpritePos();
+        checkMouseOver(rectangle);
+        
+        printRenderer();
+        if(i%4 == 0) SDL_Delay(1);
+        i++;
+    }
+
+    //Libération de la mémoire allouée
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
+
+void exitWithError(char* error)
+{
+    SDL_Log("|!| ERREUR |!| %s : %s", error, SDL_GetError());
+    SDL_Quit();
+    exit(EXIT_FAILURE);
+}
+
+//Fonction initialisant la fenêtre
+void initWindow()
+{
     //Initialisation de la SDL
     if(SDL_Init(SDL_INIT_VIDEO) != 0) exitWithError("Initialisation Video");
 
     //Création de la fenêtre
-    SDL_Window* window = NULL;
+    window = NULL;
     window = SDL_CreateWindow("Fenêtre test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if(window == NULL) exitWithError("Creation fenetre");
     
     //Création d'un rendu
-    SDL_Renderer* renderer = NULL;
+    renderer = NULL;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if(renderer == NULL)
     {
@@ -31,14 +85,14 @@ int main(int argc, char** argv)
     }
 
     //Création d'une surface et d'une texture
-    SDL_Surface* surface = NULL;
-    SDL_Texture* texture = NULL;
-    //SDL_Surface* surface2 = NULL;
-    //SDL_Texture* texture2 = NULL;
+    surface = NULL;
+    texture = NULL;
+}
 
-
-    surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
-    //surface2 = SDL_LoadBMP("images/rouge.bmp");
+//Fonction chargeant les sprites
+void loadSprite(char* sprite)
+{
+    surface = SDL_LoadBMP(sprite);
     if(surface == NULL)
     {
         SDL_DestroyRenderer(renderer);
@@ -47,56 +101,52 @@ int main(int argc, char** argv)
     }
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
-    //texture2 = SDL_CreateTextureFromSurface(renderer, surface2);
     SDL_FreeSurface(surface);
-    //SDL_FreeSurface(surface2);
     if(texture == NULL)
     {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         exitWithError("Creation texture");
     }
+}
 
-    //Charger la texture en mémoire
-    SDL_Rect rectangle;
-    //SDL_Rect rectangle2;
-    //SDL_QueryTexture(texture2, NULL, NULL, &rectangle2.w, &rectangle2.h);
-    //rectangle2.x = WINDOW_WIDTH - 100;
-    //rectangle2.y = 0;
-    if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h) != 0)
+void setSpriteSize(int w, int h)
+{
+    //Dimensions rectangle texture
+    if(w==-1 && h==-1)
     {
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        exitWithError("Chargement texture en memoire");
+        if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h) != 0)
+        {
+            SDL_DestroyTexture(texture);
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            exitWithError("Chargement texture en memoire");
+        }
     }
-    rectangle.x = WINDOW_WIDTH/2 - 100/2;
-    rectangle.y = WINDOW_HEIGHT/2 - 100/2;
-
-    //Afficher la surface
-    if(SDL_RenderCopy(renderer, texture, NULL, &rectangle) != 0)
+    else
     {
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        exitWithError("Chargement texture sur rendu");
+        rectangle.w = w;
+        rectangle.h = h;
     }
-    //SDL_RenderCopy(renderer, texture2, NULL, &rectangle2);
+}
 
-    
-    bool running = true;
-    SDL_Event event;
-    bool dir[4];
+void setSpritePos(int x, int y)
+{
+    rectangle.x = x;
+    rectangle.y = y;
+}
+
+void initVariables()
+{
+    running = true;
     for(int i=0; i<4; i++) dir[i] = false;
-    bool over = false;
+    over = false;
+}
 
-
-    int x=0, y=0;
-    int i=0;
-
-    while(running)
-    {
-        while(SDL_PollEvent(&event))
+//Fonction gérant les évènements
+void treatEvents(SDL_Event event)
+{
+    while(SDL_PollEvent(&event))
         {
             switch(event.type)
             {
@@ -173,54 +223,45 @@ int main(int argc, char** argv)
                     break;
             }
         }
-
-        if(dir[0] && rectangle.y>0) rectangle.y--;
-        if(dir[1] && (rectangle.y+100)<WINDOW_HEIGHT) rectangle.y++;
-        if(dir[2] && rectangle.x>0) rectangle.x--;
-        if(dir[3] && (rectangle.x+100)<WINDOW_WIDTH) rectangle.x++;
-        if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
-
-        SDL_GetMouseState(&x, &y);
-        if(rectangle.x<x && x<rectangle.x+100 && rectangle.y<y && y<rectangle.y+100 && !over)
-        {
-            SDL_Surface *surface = NULL;
-            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\rouge.bmp");
-            texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_FreeSurface(surface);
-            over = true;
-            printf("Coloration\n");
-        }
-        if(!(rectangle.x<x && x<rectangle.x+100 && rectangle.y<y && y<rectangle.y+100) && over)
-        {
-            SDL_Surface *surface = NULL;
-            surface = SDL_LoadBMP("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
-            texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_FreeSurface(surface);
-            over = false;
-            printf("Decoloration\n");
-        }
-        
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, &rectangle);
-        //SDL_RenderCopy(renderer, texture2, NULL, &rectangle2);
-        SDL_RenderPresent(renderer);
-        if(i%2 == 0) SDL_Delay(1);
-        i++;
-    }
-
-    //Libération de la mémoire allouée
-    SDL_DestroyTexture(texture);
-    //SDL_DestroyTexture(texture2);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-
-    return 0;
 }
 
-void exitWithError(char* error)
+void updateSpritePos()
 {
-    SDL_Log("|!| ERREUR |!| %s : %s", error, SDL_GetError());
-    SDL_Quit();
-    exit(EXIT_FAILURE);
+    if(dir[0] && rectangle.y>0) setSpritePos(rectangle.x, rectangle.y-1);
+    if(dir[1] && (rectangle.y+100)<WINDOW_HEIGHT) setSpritePos(rectangle.x, rectangle.y+1);
+    if(dir[2] && rectangle.x>0) setSpritePos(rectangle.x-1, rectangle.y);
+    if(dir[3] && (rectangle.x+100)<WINDOW_WIDTH) setSpritePos(rectangle.x+1, rectangle.y);
+    if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
+}
+
+void checkMouseOver(SDL_Rect rec)
+{
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    if(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h && !over)
+    {
+        loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\rouge.bmp");
+        over = true;
+        printf("Coloration\n");
+    }
+    if(!(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h) && over)
+    {
+        loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bleu.bmp");
+        over = false;
+        printf("Decoloration\n");
+    }
+}
+
+//Fonction affichant le rendu sur la fenêtre
+void printRenderer()
+{
+    SDL_RenderClear(renderer);
+    if(SDL_RenderCopy(renderer, texture, NULL, &rectangle) != 0)
+    {
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        exitWithError("Chargement texture sur rendu");
+    }
+    SDL_RenderPresent(renderer);
 }
