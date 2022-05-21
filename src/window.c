@@ -1,36 +1,5 @@
 //gcc src/window.c -o bin/window -I include -L lib -lmingw32 -lSDL2main -lSDL2 -mwindows
-#include <stdio.h>
-#include <stdlib.h>
-#include <SDL.h>
-#include <stdbool.h>
-
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 640
-
-SDL_Rect lettres[26];
-
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Surface *surface;
-SDL_Texture *texture;
-SDL_Rect rectangle;
-SDL_Event event;
-bool running;
-bool dir[4];
-bool over = false;
-int lettre;
-
-void exitWithError(char* error);
-void initLettres();
-void initWindow();
-void loadSprite(char* sprite);
-void setSpritePos(int x, int y);
-void setSpriteSize(int w, int h);
-void initVariables();
-void treatEvents(SDL_Event event);
-void updateSpritePos();
-void checkMouseOver(SDL_Rect rec);
-void printRenderer();
+#include "window.h"
 
 int main(int argc, char** argv)
 {
@@ -38,23 +7,59 @@ int main(int argc, char** argv)
     initWindow();
     loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
     setSpritePos(WINDOW_WIDTH/2 - 100/2, WINDOW_HEIGHT/2 - 100/2);
-    setSpriteSize(38, 58);
+    setSpriteSize(lettres[lettre].w, lettres[lettre].h);
     initVariables();
     int i=0;
 
+    //Chargement du mot
+    char* char_word = "bonjour";
+    //Initialisation des variables des lettres et de leur pos
+    word = (SDL_Rect*) malloc(strlen(char_word)*sizeof(SDL_Rect));
+    pos = (SDL_Rect*) malloc(strlen(char_word)*sizeof(SDL_Rect));
+    //Pour chaque lettre on définit sa position dans texture et sa position sur le render
+    int spriteLenght = 0;
+    for(int i=0; i<strlen(char_word); i++)
+    {
+        int num = char_word[i] - 97;
+        word[i].x = lettres[num].x;
+        word[i].y = lettres[num].y;
+        word[i].w = lettres[num].w;
+        word[i].h = lettres[num].h;
+
+        if(i != 0)
+        {
+            pos[i].x = pos[i-1].x + pos[i-1].w + 5;
+        }
+        else
+        {
+            pos[i].x = 0;
+        }
+        pos[i].y = 30;
+        pos[i].w = word[i].w;
+        pos[i].h = word[i].h;
+
+        spriteLenght += word[i].w + 5;
+    }
+
+    printf("%d\n", spriteLenght);
+
     while(running)
     {
-        if(i%250 == 249) lettre = (lettre+1)%26;
         treatEvents(event);
         updateSpritePos();
         checkMouseOver(rectangle);
         
-        printRenderer();
+        SDL_RenderClear(renderer);
+        printRenderer(texture, &lettres[lettre], &rectangle, 1);
+        printRenderer(texture, word, pos, strlen(char_word));
+        SDL_RenderPresent(renderer);
         if(i%4 == 0) SDL_Delay(1);
         i++;
     }
 
     //Libération de la mémoire allouée
+    free(word);
+    free(pos);
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
@@ -100,7 +105,6 @@ void initLettres()
     lettres[23].x=1123; lettres[23].y=0; lettres[23].w=47; lettres[23].h=larg; //x
     lettres[24].x=1181; lettres[24].y=0; lettres[24].w=47; lettres[24].h=larg; //y
     lettres[25].x=1238; lettres[25].y=0; lettres[25].w=38; lettres[25].h=larg; //z
-    for(int i=0; i<26; i++) printf("%d %d %d %d\n", lettres[i].x, lettres[i].y, lettres[i].w, lettres[i].h);
 }
 
 //Fonction initialisant la fenêtre
@@ -208,133 +212,107 @@ void treatEvents(SDL_Event event)
                             dir[3] = true;
                             break;
                         case SDLK_a :
-                            lettre = 0;
-                            setSpriteSize(38, 58);
+                            changeLetter(0);
                             printf("A\n");
                             break;
                         case SDLK_b :
-                            lettre = 1;
-                            setSpriteSize(38, 58);
+                            changeLetter(1);
                             printf("B\n");
                             break;
                         case SDLK_c :
-                            lettre = 2;
-                            setSpriteSize(38, 58);
+                            changeLetter(2);
                             printf("C\n");
                             break;
                         case SDLK_d :
-                            lettre = 3;
-                            setSpriteSize(38, 58);
+                            changeLetter(3);
                             printf("D\n");
                             break;
                         case SDLK_e :
-                            lettre = 4;
-                            setSpriteSize(38, 58);
+                            changeLetter(4);
                             printf("E\n");
                             break;
                         case SDLK_f :
-                            lettre = 5;
-                            setSpriteSize(38, 58);
+                            changeLetter(5);
                             printf("F\n");
                             break;
                         case SDLK_g :
-                            lettre = 6;
-                            setSpriteSize(38, 58);
+                            changeLetter(6);
                             printf("G\n");
                             break;
                         case SDLK_h :
-                            lettre = 7;
-                            setSpriteSize(38, 58);
+                            changeLetter(7);
                             printf("H\n");
                             break;
                         case SDLK_i :
-                            lettre = 8;
-                            setSpriteSize(9, 58);
+                            changeLetter(8);
                             printf("I\n");
                             break;
                         case SDLK_j :
-                            lettre = 9;
-                            setSpriteSize(38, 58);
+                            changeLetter(9);
                             printf("J\n");
                             break;
                         case SDLK_k :
-                            lettre = 10;
-                            setSpriteSize(38, 58);
+                            changeLetter(10);
                             printf("K\n");
                             break;
                         case SDLK_l :
-                            lettre = 11;
-                            setSpriteSize(38, 58);
+                            changeLetter(11);
                             printf("L\n");
                             break;
                         case SDLK_m :
-                            lettre = 12;
-                            setSpriteSize(47, 58);
+                            changeLetter(12);
                             printf("M\n");
                             break;
                         case SDLK_n :
-                            lettre = 13;
-                            setSpriteSize(38, 58);
+                            changeLetter(13);
                             printf("N\n");
                             break;
                         case SDLK_o :
-                            lettre = 14;
-                            setSpriteSize(38, 58);
+                            changeLetter(14);
                             printf("O\n");
                             break;
                         case SDLK_p :
-                            lettre = 15;
-                            setSpriteSize(38, 58);
+                            changeLetter(15);
                             printf("P\n");
                             break;
                         case SDLK_q :
-                            lettre = 16;
-                            setSpriteSize(47, 58);
+                            changeLetter(16);
                             printf("Q\n");
                             break;
                         case SDLK_r :
-                            lettre = 17;
-                            setSpriteSize(38, 58);
+                            changeLetter(17);
                             printf("R\n");
                             break;
                         case SDLK_s :
-                            lettre = 18;
-                            setSpriteSize(38, 58);
+                            changeLetter(18);
                             printf("S\n");
                             break;
                         case SDLK_t :
-                            lettre = 19;
-                            setSpriteSize(47, 58);
+                            changeLetter(19);
                             printf("T\n");
                             break;
                         case SDLK_u :
-                            lettre = 20;
-                            setSpriteSize(38, 58);
+                            changeLetter(20);
                             printf("U\n");
                             break;
                         case SDLK_v :
-                            lettre = 21;
-                            setSpriteSize(47, 58);
+                            changeLetter(21);
                             printf("V\n");
                             break;
                         case SDLK_w :
-                            lettre = 22;
-                            setSpriteSize(47, 58);
+                            changeLetter(22);
                             printf("W\n");
                             break;
                         case SDLK_x :
-                            lettre = 23;
-                            setSpriteSize(47, 58);
+                            changeLetter(23);
                             printf("X\n");
                             break;
                         case SDLK_y :
-                            lettre = 24;
-                            setSpriteSize(47, 58);
+                            changeLetter(24);
                             printf("Y\n");
                             break;
                         case SDLK_z :
-                            lettre = 25;
-                            setSpriteSize(38, 58);
+                            changeLetter(25);
                             printf("Z\n");
                             break;
                         default :
@@ -372,7 +350,7 @@ void updateSpritePos()
     if(dir[1] && (rectangle.y+lettres[lettre].h)<WINDOW_HEIGHT) setSpritePos(rectangle.x, rectangle.y+1);
     if(dir[2] && rectangle.x>0) setSpritePos(rectangle.x-1, rectangle.y);
     if(dir[3] && (rectangle.x+lettres[lettre].w)<WINDOW_WIDTH) setSpritePos(rectangle.x+1, rectangle.y);
-    if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
+    //if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
 }
 
 void checkMouseOver(SDL_Rect rec)
@@ -392,15 +370,22 @@ void checkMouseOver(SDL_Rect rec)
 }
 
 //Fonction affichant le rendu sur la fenêtre
-void printRenderer()
+void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size)
 {
-    SDL_RenderClear(renderer);
-    if(SDL_RenderCopy(renderer, texture, &lettres[lettre], &rectangle) != 0)
+    for(int i=0; i<size; i++)
     {
-        SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        exitWithError("Chargement texture sur rendu");
+        if(SDL_RenderCopy(renderer, tex, &(sprite[i]), &(pos[i])) != 0)
+        {
+            SDL_DestroyTexture(texture);
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            exitWithError("Chargement texture sur rendu");
+        }
     }
-    SDL_RenderPresent(renderer);
+}
+
+void changeLetter(int i)
+{
+    lettre = i;
+    setSpriteSize(lettres[lettre].w, lettres[lettre].h);
 }
