@@ -53,25 +53,20 @@ bool isIn(char c, char* word)
     return false;
 }
 
-Jeu nextTurn(Jeu jeu)
+Jeu nextTurn(Jeu jeu, char letter)
 {
     //Affichage du mot caché
-    printf("%s\n", jeu.word);
+    //printf("%s\n", jeu.word);
     printf("%s\n", jeu.hiddenWord);
-
-    //Nombre de lettres trouvé + vie
-    char letter;
 
     //On affiche le nombre de vie
     printf("Vies : %d\n", jeu.lives);
 
-    //Tant que la lettre entrée n'est pas entre 'a' et 'z' ou entre 'A' et 'Z'
-    while( !(97 <= letter && letter <= 122) )
+    //Si la lettre n'est pas comprise entre 'a' et 'z' on arrête ici
+    if((letter < 97) || (letter > 122))
     {
-        printf("Choisissez une lettre : ");
-        scanf("%c", &letter); //On fait entrer un caractère à l'utilisateur
-        if(65 <= letter && letter <= 90) letter += 32; //Si la lettre est une majuscule on la met en minuscule
-        if(!(97 <= letter && letter <= 122)) while((letter=getchar()) != '\n' && letter != EOF);; //On vide le buffer clavier si la lettre entrée n'est pas entre 'a' et 'z'
+        printf("mauvais caractere\n");
+        return jeu;
     }
     
     //Si la lettre est déjà découverte
@@ -101,7 +96,6 @@ Jeu nextTurn(Jeu jeu)
     } 
     
     printf("\n\n\n");
-    while((letter=getchar()) != '\n' && letter != EOF); //On vide le buffer clavier
 
     return jeu;
 }

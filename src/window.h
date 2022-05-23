@@ -6,18 +6,20 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include "jeu.h"
 #include "dictionnaire.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 640
 
 //Tableau contenant les pos et les tailles des lettres
-SDL_Rect lettres[26];
+SDL_Rect lettres[27];
 //Tableau contenant les pos et les taille des lettres du mot
 SDL_Rect *word;//
 //Tableau contenant les positions des lettres du mot sur le rendu
 SDL_Rect *pos;//
 char *hiddenWord;
+char currentLetter;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -42,5 +44,6 @@ void updateSpritePos();
 void checkMouseOver(SDL_Rect rec);
 void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size);
 void changeLetter(int i);
+void loadHiddenWord(Jeu jeu);
 
 #endif

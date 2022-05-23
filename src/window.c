@@ -1,6 +1,8 @@
 //gcc src/window.c -o bin/window -I include -L lib -lmingw32 -lSDL2main -lSDL2 -mwindows
 #include "window.h"
 
+Jeu mjeu;
+
 int main(int argc, char** argv)
 {
     initLettres();
@@ -12,38 +14,9 @@ int main(int argc, char** argv)
     int i=0;
 
     //Chargement du mot
-    char *mword = selectWord();
-    hiddenWord = mword;
-    //Initialisation des variables des lettres et de leur pos
-    word = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
-    pos = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
-    //Pour chaque lettre on définit sa position dans texture et sa position sur le render
-    int spriteLenght = 0;
-    for(int i=0; i<strlen(hiddenWord); i++)
-    {
-        int num = hiddenWord[i] - 97;
-        word[i].x = lettres[num].x;
-        word[i].y = lettres[num].y;
-        word[i].w = lettres[num].w;
-        word[i].h = lettres[num].h;
-        spriteLenght += word[i].w + 5;
-    }
-    for(int i=0; i<strlen(hiddenWord); i++)
-    {
-        if(i != 0)
-        {
-            pos[i].x = pos[i-1].x + pos[i-1].w + 5;
-        }
-        else
-        {
-            pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
-        }
-        pos[i].y = 30;
-        pos[i].w = word[i].w;
-        pos[i].h = word[i].h;
-    }
-
-    printf("%d\n", spriteLenght);
+    mjeu = initJeu();
+    loadHiddenWord(mjeu);
+    currentLetter = 'a';
 
     while(running)
     {
@@ -57,9 +30,23 @@ int main(int argc, char** argv)
         SDL_RenderPresent(renderer);
         if(i%4 == 0) SDL_Delay(1);
         i++;
+
+        if(mjeu.lives == 0 || mjeu.lettersFound == strlen(mjeu.word))
+        {
+            /*jeu = initJeu();
+            loadHiddenWord(jeu);
+            SDL_RenderClear(renderer);
+            printRenderer(texture, &lettres[lettre], &rectangle, 1);
+            printRenderer(texture, word, pos, strlen(hiddenWord));
+            SDL_RenderPresent(renderer);*/
+            running = false;
+        }
     }
 
+    printf("Le mot etait : %s\n", mjeu.word);
+
     //Libération de la mémoire allouée
+    freeJeu(mjeu);
     free(word);
     free(pos);
     SDL_DestroyTexture(texture);
@@ -107,6 +94,7 @@ void initLettres()
     lettres[23].x=1123; lettres[23].y=0; lettres[23].w=47; lettres[23].h=larg; //x
     lettres[24].x=1181; lettres[24].y=0; lettres[24].w=47; lettres[24].h=larg; //y
     lettres[25].x=1238; lettres[25].y=0; lettres[25].w=38; lettres[25].h=larg; //z
+    lettres[26].x=1286; lettres[26].y=0; lettres[26].w=38; lettres[26].h=larg; //_
 }
 
 //Fonction initialisant la fenêtre
@@ -215,108 +203,142 @@ void treatEvents(SDL_Event event)
                             break;
                         case SDLK_a :
                             changeLetter(0);
+                            currentLetter = 'a';
                             printf("A\n");
                             break;
                         case SDLK_b :
                             changeLetter(1);
+                            currentLetter = 'b';
                             printf("B\n");
                             break;
                         case SDLK_c :
                             changeLetter(2);
+                            currentLetter = 'c';
                             printf("C\n");
                             break;
                         case SDLK_d :
                             changeLetter(3);
+                            currentLetter = 'd';
                             printf("D\n");
                             break;
                         case SDLK_e :
                             changeLetter(4);
+                            currentLetter = 'e';
                             printf("E\n");
                             break;
                         case SDLK_f :
                             changeLetter(5);
+                            currentLetter = 'f';
                             printf("F\n");
                             break;
                         case SDLK_g :
                             changeLetter(6);
+                            currentLetter = 'g';
                             printf("G\n");
                             break;
                         case SDLK_h :
                             changeLetter(7);
+                            currentLetter = 'h';
                             printf("H\n");
                             break;
                         case SDLK_i :
                             changeLetter(8);
+                            currentLetter = 'i';
                             printf("I\n");
                             break;
                         case SDLK_j :
                             changeLetter(9);
+                            currentLetter = 'j';
                             printf("J\n");
                             break;
                         case SDLK_k :
                             changeLetter(10);
+                            currentLetter = 'k';
                             printf("K\n");
                             break;
                         case SDLK_l :
                             changeLetter(11);
+                            currentLetter = 'l';
                             printf("L\n");
                             break;
                         case SDLK_m :
                             changeLetter(12);
+                            currentLetter = 'm';
                             printf("M\n");
                             break;
                         case SDLK_n :
                             changeLetter(13);
+                            currentLetter = 'n';
                             printf("N\n");
                             break;
                         case SDLK_o :
                             changeLetter(14);
+                            currentLetter = 'o';
                             printf("O\n");
                             break;
                         case SDLK_p :
                             changeLetter(15);
+                            currentLetter = 'p';
                             printf("P\n");
                             break;
                         case SDLK_q :
                             changeLetter(16);
+                            currentLetter = 'q';
                             printf("Q\n");
                             break;
                         case SDLK_r :
                             changeLetter(17);
+                            currentLetter = 'r';
                             printf("R\n");
                             break;
                         case SDLK_s :
                             changeLetter(18);
+                            currentLetter = 's';
                             printf("S\n");
                             break;
                         case SDLK_t :
                             changeLetter(19);
+                            currentLetter = 't';
                             printf("T\n");
                             break;
                         case SDLK_u :
                             changeLetter(20);
+                            currentLetter = 'u';
                             printf("U\n");
                             break;
                         case SDLK_v :
                             changeLetter(21);
+                            currentLetter = 'v';
                             printf("V\n");
                             break;
                         case SDLK_w :
                             changeLetter(22);
+                            currentLetter = 'w';
                             printf("W\n");
                             break;
                         case SDLK_x :
                             changeLetter(23);
+                            currentLetter = 'x';
                             printf("X\n");
                             break;
                         case SDLK_y :
                             changeLetter(24);
+                            currentLetter = 'y';
                             printf("Y\n");
                             break;
                         case SDLK_z :
                             changeLetter(25);
+                            currentLetter = 'z';
                             printf("Z\n");
                             break;
+                        case SDLK_8 :
+                            changeLetter(26);
+                            printf("_\n");
+                            break;
+                        case SDLK_RETURN :
+                            mjeu = nextTurn(mjeu, currentLetter);
+                            loadHiddenWord(mjeu);
+                            printf("ENTRER\n");
                         default :
                             break;
                     }
@@ -390,4 +412,40 @@ void changeLetter(int i)
 {
     lettre = i;
     setSpriteSize(lettres[lettre].w, lettres[lettre].h);
+}
+
+void loadHiddenWord(Jeu jeu)
+{
+    //Chargement du mot
+    hiddenWord = jeu.hiddenWord;
+    //Initialisation des variables des lettres et de leur pos
+    word = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
+    pos = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
+    //Pour chaque lettre on définit sa position dans texture et sa position sur le render
+    int spriteLenght = 0;
+    for(int i=0; i<strlen(hiddenWord); i++)
+    {
+        int num;
+        if(hiddenWord[i] == '_') num = 26;
+        else num = hiddenWord[i] - 97;
+        word[i].x = lettres[num].x;
+        word[i].y = lettres[num].y;
+        word[i].w = lettres[num].w;
+        word[i].h = lettres[num].h;
+        spriteLenght += word[i].w + 5;
+    }
+    for(int i=0; i<strlen(hiddenWord); i++)
+    {
+        if(i != 0)
+        {
+            pos[i].x = pos[i-1].x + pos[i-1].w + 5;
+        }
+        else
+        {
+            pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
+        }
+        pos[i].y = 30;
+        pos[i].w = word[i].w;
+        pos[i].h = word[i].h;
+    }
 }

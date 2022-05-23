@@ -14,7 +14,7 @@ typedef struct
 Jeu initJeu();
 void affiche(Jeu jeu);
 bool isIn(char c, char* word);
-Jeu nextTurn(Jeu jeu);
+Jeu nextTurn(Jeu jeu, char letter);
 void freeJeu(Jeu jeu);
 
 #endif

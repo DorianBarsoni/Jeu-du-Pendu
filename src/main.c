@@ -8,6 +8,8 @@
 #include "dictionnaire.h"
 #include "jeu.h"
 
+Jeu jeu;
+
 void emptyBufferKeyboard()
 {
     int l;
@@ -18,8 +20,7 @@ int main()
 {
     srand((unsigned)time(NULL));
 
-    //launchGame();
-    Jeu jeu = initJeu();
+    jeu = initJeu();
     affiche(jeu);
     while( (jeu.lettersFound < strlen(jeu.word)) && (jeu.lives > 0) ) jeu = nextTurn(jeu);
     freeJeu(jeu);
