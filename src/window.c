@@ -6,39 +6,41 @@ int main(int argc, char** argv)
     initLettres();
     initWindow();
     loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
-    setSpritePos(WINDOW_WIDTH/2 - 100/2, WINDOW_HEIGHT/2 - 100/2);
+    setSpritePos(WINDOW_WIDTH/2 - lettres[lettre].w/2, WINDOW_HEIGHT/2 - lettres[lettre].h/2);
     setSpriteSize(lettres[lettre].w, lettres[lettre].h);
     initVariables();
     int i=0;
 
     //Chargement du mot
-    char* char_word = "bonjour";
+    char *mword = selectWord();
+    hiddenWord = mword;
     //Initialisation des variables des lettres et de leur pos
-    word = (SDL_Rect*) malloc(strlen(char_word)*sizeof(SDL_Rect));
-    pos = (SDL_Rect*) malloc(strlen(char_word)*sizeof(SDL_Rect));
+    word = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
+    pos = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
     //Pour chaque lettre on définit sa position dans texture et sa position sur le render
     int spriteLenght = 0;
-    for(int i=0; i<strlen(char_word); i++)
+    for(int i=0; i<strlen(hiddenWord); i++)
     {
-        int num = char_word[i] - 97;
+        int num = hiddenWord[i] - 97;
         word[i].x = lettres[num].x;
         word[i].y = lettres[num].y;
         word[i].w = lettres[num].w;
         word[i].h = lettres[num].h;
-
+        spriteLenght += word[i].w + 5;
+    }
+    for(int i=0; i<strlen(hiddenWord); i++)
+    {
         if(i != 0)
         {
             pos[i].x = pos[i-1].x + pos[i-1].w + 5;
         }
         else
         {
-            pos[i].x = 0;
+            pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
         }
         pos[i].y = 30;
         pos[i].w = word[i].w;
         pos[i].h = word[i].h;
-
-        spriteLenght += word[i].w + 5;
     }
 
     printf("%d\n", spriteLenght);
@@ -51,7 +53,7 @@ int main(int argc, char** argv)
         
         SDL_RenderClear(renderer);
         printRenderer(texture, &lettres[lettre], &rectangle, 1);
-        printRenderer(texture, word, pos, strlen(char_word));
+        printRenderer(texture, word, pos, strlen(hiddenWord));
         SDL_RenderPresent(renderer);
         if(i%4 == 0) SDL_Delay(1);
         i++;

@@ -18,9 +18,13 @@ int main()
 {
     srand((unsigned)time(NULL));
 
-    launchGame();
+    //launchGame();
+    Jeu jeu = initJeu();
+    affiche(jeu);
+    while( (jeu.lettersFound < strlen(jeu.word)) && (jeu.lives > 0) ) jeu = nextTurn(jeu);
+    freeJeu(jeu);
     
-    printf("\nPressez n'importe quelle touche pour finir le jeu ");
+    printf("\nPressez ENTRER pour finir le jeu ");
     getchar();
     
     return EXIT_SUCCESS;

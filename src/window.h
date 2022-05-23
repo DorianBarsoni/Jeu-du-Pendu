@@ -1,8 +1,12 @@
 //gcc src/window.c -o bin/window -I include -L lib -lmingw32 -lSDL2main -lSDL2 -mwindows
+#ifndef WINDOW_H
+#define WINDOW_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include "dictionnaire.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 640
@@ -13,6 +17,7 @@ SDL_Rect lettres[26];
 SDL_Rect *word;//
 //Tableau contenant les positions des lettres du mot sur le rendu
 SDL_Rect *pos;//
+char *hiddenWord;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -37,3 +42,5 @@ void updateSpritePos();
 void checkMouseOver(SDL_Rect rec);
 void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size);
 void changeLetter(int i);
+
+#endif

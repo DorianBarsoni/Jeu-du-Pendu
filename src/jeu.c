@@ -1,9 +1,46 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 #include "dictionnaire.h"
 #include "jeu.h"
+
+Jeu initJeu()
+{
+    //Création de l'objet
+    Jeu jeu;
+
+    //Initialisation du mot et du mot caché
+    char *tmp = selectWord();
+    jeu.word = (char*) malloc((strlen(tmp) + 1)*sizeof(char));
+    jeu.hiddenWord = (char*) malloc((strlen(tmp) + 1)*sizeof(char));
+    for(int i=0; i<strlen(tmp); i++)
+    {
+        jeu.word[i] = tmp[i];
+        jeu.hiddenWord[i] = '_';
+    }
+    jeu.word[strlen(tmp)] = 0;
+    jeu.hiddenWord[strlen(tmp)] = 0;
+
+    //Initialisation du nombre de vie et du nombre de lettres trouvées
+    jeu.lives = 10;
+    jeu.lettersFound = 0;
+
+    //Initialisation des lettres déjà trouvées
+    for(int i=0; i<26; i++) jeu.lettres[i] = 0;
+
+    return jeu;
+}
+
+void affiche(Jeu jeu)
+{
+    printf("%s\n", jeu.word);
+    printf("%s\n", jeu.hiddenWord);
+    printf("%d %d\n", jeu.lives, jeu.lettersFound);
+    for(int i=0; i<26; i++) printf("%d ", jeu.lettres[i]);
+    printf("\n");
+}
 
 bool isIn(char c, char* word)
 {
@@ -16,67 +53,61 @@ bool isIn(char c, char* word)
     return false;
 }
 
-void launchGame()
+Jeu nextTurn(Jeu jeu)
 {
-    //Sélection du mot
-    
-    char* word = selectWord();
-    //printWord(word);
-
-    //Longueur du mot
-    int wordLength = strlen(word);
-    printf("Taille : %d\n", strlen(word));
-
-    //Création du mot caché
-    char hiddenWord[wordLength + 1];
-    for(int i=0; i<wordLength; i++) hiddenWord[i] = '_';
-    hiddenWord[wordLength] = 0;
-
     //Affichage du mot caché
-    printWord(hiddenWord);
+    printf("%s\n", jeu.word);
+    printf("%s\n", jeu.hiddenWord);
 
     //Nombre de lettres trouvé + vie
-    int letterFound = 0;
     char letter;
-    int lives = 10;
 
-    //Tant que le nombre de lettres trouvées est différent de la taille du mot et que le nombre de vie est différent de 0
-    while(letterFound != wordLength && lives != 0)
+    //On affiche le nombre de vie
+    printf("Vies : %d\n", jeu.lives);
+
+    //Tant que la lettre entrée n'est pas entre 'a' et 'z' ou entre 'A' et 'Z'
+    while( !(97 <= letter && letter <= 122) )
     {
-        printf("Vies : %d\n", lives); //On affiche les vies
-        while( !(97 <= letter && letter <= 122) ) //Tant que la lettre entrée n'est pas entre 'a' et 'z'
+        printf("Choisissez une lettre : ");
+        scanf("%c", &letter); //On fait entrer un caractère à l'utilisateur
+        if(65 <= letter && letter <= 90) letter += 32; //Si la lettre est une majuscule on la met en minuscule
+        if(!(97 <= letter && letter <= 122)) while((letter=getchar()) != '\n' && letter != EOF);; //On vide le buffer clavier si la lettre entrée n'est pas entre 'a' et 'z'
+    }
+    
+    //Si la lettre est déjà découverte
+    if(jeu.lettres[letter-97])
+    {
+        printf("! Lettre deja entree !\n"); //On ne fait rien
+    }
+    //Sinon si elle est présent dans le mot à trouver
+    else if(isIn(letter, jeu.word))
+    {
+        //On l'affiche, on incrémente le nombre de lettres trouvées et on met à jour le tableau des lettres entrées
+        for(int i=0; i<strlen(jeu.word); i++)
         {
-            printf("Choisissez une lettre (minuscule) : ");
-            scanf("%c", &letter); //On fait entrer un caractère à l'utilisateur
-            if(!(97 <= letter && letter <= 122)) while((letter=getchar()) != '\n' && letter != EOF);; //On vide le buffer clavier si la lettre entrée n'est pas entre 'a' et 'z'
-        }
-        
-        //Si la lettre est déjà découverte
-        if(isIn(letter, hiddenWord))
-        {
-            printf("! Lettre deja entree !\n"); //On ne fait rien
-        }
-        //Sinon si elle est présent dans le mot à trouver
-        else if(isIn(letter, word))
-        {
-            //On l'affiche et on incrémente le nombre de lettres trouvées
-            for(int i=0; i<wordLength; i++)
+            if(letter == jeu.word[i])
             {
-                if(letter == word[i])
-                {
-                    hiddenWord[i] = letter;
-                    letterFound++;
-                }
+                jeu.hiddenWord[i] = letter;
+                jeu.lettersFound++;;
             }
         }
-        //Sinon on retire une vie au joueur
-        else lives--;
-        
-        printf("\n\n\n");
-        printWord(hiddenWord);
-        while((letter=getchar()) != '\n' && letter != EOF); //On vide le buffer clavier
+        jeu.lettres[letter-97] = 1;
     }
+    //Sinon on retire une vie au joueur et on met à jour le tableau des lettres entrées
+    else
+    {
+        jeu.lives--;
+        jeu.lettres[letter-97] = 1;
+    } 
+    
+    printf("\n\n\n");
+    while((letter=getchar()) != '\n' && letter != EOF); //On vide le buffer clavier
 
-    if(lives == 0) printf("Dommage ! Le mot etait %s !\n", word);
-    else printf("Bravo ! Le mot etait %s !\n", word);
+    return jeu;
+}
+
+void freeJeu(Jeu jeu)
+{
+    free(jeu.word);
+    free(jeu.hiddenWord);
 }

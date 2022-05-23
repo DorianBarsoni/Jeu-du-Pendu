@@ -67,14 +67,3 @@ void freeDic(dictionnaire dic)
 {
     free(dic.dictionnaire);
 }
-
-void printWord(char* word)
-{
-    int i = 0;
-    while(*(word + i) != 0)
-    {
-        printf("%c ", *(word + i));
-        i++;
-    }
-    printf("\n");
-}

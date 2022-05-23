@@ -1,3 +1,6 @@
+#ifndef DICTIONNAIRE_H
+#define DICTIONNAIRE_H
+
 #include <stdio.h>
 
 typedef struct
@@ -9,4 +12,5 @@ typedef struct
 dictionnaire initDic();
 char* selectWord();
 void freeDic(dictionnaire dic);
-void printWord(char* word);
+
+#endif
