@@ -17,6 +17,7 @@ int main(int argc, char** argv)
     mjeu = initJeu();
     loadHiddenWord(mjeu);
     currentLetter = 'a';
+    //printf("%s\n", mjeu.word);
 
     while(running)
     {
@@ -25,21 +26,22 @@ int main(int argc, char** argv)
         checkMouseOver(rectangle);
         
         SDL_RenderClear(renderer);
-        printRenderer(texture, &lettres[lettre], &rectangle, 1);
         printRenderer(texture, word, pos, strlen(hiddenWord));
+        printRenderer(texture, &lettres[lettre], &rectangle, 1);
         SDL_RenderPresent(renderer);
         if(i%4 == 0) SDL_Delay(1);
         i++;
 
         if(mjeu.lives == 0 || mjeu.lettersFound == strlen(mjeu.word))
         {
-            /*jeu = initJeu();
-            loadHiddenWord(jeu);
+            SDL_Delay(300);
+            mjeu = initJeu();
+            loadHiddenWord(mjeu);
             SDL_RenderClear(renderer);
-            printRenderer(texture, &lettres[lettre], &rectangle, 1);
             printRenderer(texture, word, pos, strlen(hiddenWord));
-            SDL_RenderPresent(renderer);*/
-            running = false;
+            printRenderer(texture, &lettres[lettre], &rectangle, 1);
+            SDL_RenderPresent(renderer);
+            //printf("%s\n", mjeu.word);
         }
     }
 
