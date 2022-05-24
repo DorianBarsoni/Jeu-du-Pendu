@@ -1,4 +1,4 @@
-//gcc src/main.c src/dictionnaire.c src/jeu.c -o bin/main -I include -L lib -lmingw32 -lSDL2main -lSDL2
+//gcc src/main.c src/dictionnaire.c src/jeu.c src/window.c -o bin/main -I include -L lib -lmingw32 -lSDL2main -lSDL2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,8 +7,7 @@
 #include <stdbool.h>
 #include "dictionnaire.h"
 #include "jeu.h"
-
-Jeu jeu;
+#include "window.h"
 
 void emptyBufferKeyboard()
 {
@@ -16,17 +15,11 @@ void emptyBufferKeyboard()
     while((l=getchar()) != '\n' && l != EOF);
 }
 
-int main()
+int main(int argc, char **argv)
 {
     srand((unsigned)time(NULL));
 
-    jeu = initJeu();
-    affiche(jeu);
-    while( (jeu.lettersFound < strlen(jeu.word)) && (jeu.lives > 0) ) jeu = nextTurn(jeu);
-    freeJeu(jeu);
-    
-    printf("\nPressez ENTRER pour finir le jeu ");
-    getchar();
+    myWindow();
     
     return EXIT_SUCCESS;
 }

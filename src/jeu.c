@@ -55,13 +55,6 @@ bool isIn(char c, char* word)
 
 Jeu nextTurn(Jeu jeu, char letter)
 {
-    //Affichage du mot caché
-    //printf("%s\n", jeu.word);
-    printf("%s\n", jeu.hiddenWord);
-
-    //On affiche le nombre de vie
-    printf("Vies : %d\n", jeu.lives);
-
     //Si la lettre n'est pas comprise entre 'a' et 'z' on arrête ici
     if((letter < 97) || (letter > 122))
     {
@@ -94,6 +87,13 @@ Jeu nextTurn(Jeu jeu, char letter)
         jeu.lives--;
         jeu.lettres[letter-97] = 1;
     } 
+
+    //Affichage du mot caché
+    //printf("%s\n", jeu.word);
+    printf("%s\n", jeu.hiddenWord);
+
+    //On affiche le nombre de vie
+    printf("Vies : %d\n", jeu.lives);
     
     printf("\n\n\n");
 

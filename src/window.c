@@ -1,62 +1,91 @@
 //gcc src/window.c -o bin/window -I include -L lib -lmingw32 -lSDL2main -lSDL2 -mwindows
 #include "window.h"
 
-Jeu mjeu;
+Jeu jeu;
+Window mwindow;
+double size = 2;
 
-int main(int argc, char** argv)
+int myWindow()
 {
-    initLettres();
+    initLettresEtChiffres();
     initWindow();
-    loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
-    setSpritePos(WINDOW_WIDTH/2 - lettres[lettre].w/2, WINDOW_HEIGHT/2 - lettres[lettre].h/2);
-    setSpriteSize(lettres[lettre].w, lettres[lettre].h);
+    mwindow.texture = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
+    mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
+    mwindow.tex_coeur = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\coeur.bmp");
+    setSpritePos(WINDOW_WIDTH/2 - mwindow.lettres[mwindow.lettre].w*size/2, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*size/2);
+    setSpriteSize(mwindow.lettres[mwindow.lettre].w*size, mwindow.lettres[mwindow.lettre].h*size, mwindow.texture, &mwindow.rectangle);
+    setSpriteSize(-1, -1, mwindow.tex_coeur, &mwindow.size_coeur);
+    setSpriteSize(-1, -1, mwindow.tex_chiffres, &mwindow.size_chiffres);
     initVariables();
     int i=0;
 
     //Chargement du mot
-    mjeu = initJeu();
-    loadHiddenWord(mjeu);
-    currentLetter = 'a';
-    //printf("%s\n", mjeu.word);
+    jeu = initJeu();
+    loadHiddenWord(jeu.hiddenWord);
+    mwindow.currentLetter = 'a';
+    //printf("%s\n", jeu.word);
 
-    while(running)
+    while(mwindow.running)
     {
-        treatEvents(event);
+        treatEvents(mwindow.event);
         updateSpritePos();
-        checkMouseOver(rectangle);
+        checkMouseOver(mwindow.rectangle);
         
-        SDL_RenderClear(renderer);
-        printRenderer(texture, word, pos, strlen(hiddenWord));
-        printRenderer(texture, &lettres[lettre], &rectangle, 1);
-        SDL_RenderPresent(renderer);
+        display();
+
         if(i%4 == 0) SDL_Delay(1);
         i++;
 
-        if(mjeu.lives == 0 || mjeu.lettersFound == strlen(mjeu.word))
+        if(jeu.lives == 0 || jeu.lettersFound == strlen(jeu.word))
         {
-            SDL_Delay(300);
-            mjeu = initJeu();
-            loadHiddenWord(mjeu);
-            SDL_RenderClear(renderer);
-            printRenderer(texture, word, pos, strlen(hiddenWord));
-            printRenderer(texture, &lettres[lettre], &rectangle, 1);
-            SDL_RenderPresent(renderer);
-            //printf("%s\n", mjeu.word);
+            loadHiddenWord(jeu.word);
+            for(int i=0; i<2; i++)
+            {
+                SDL_RenderClear(mwindow.renderer);
+                SDL_RenderPresent(mwindow.renderer);
+                SDL_Delay(300);
+                display();
+                SDL_Delay(300);
+            }
+            printf("%s\n", jeu.word);
+            SDL_Delay(200);
+            jeu = initJeu();
+            loadHiddenWord(jeu.hiddenWord);
+            SDL_RenderClear(mwindow.renderer);
+            printRenderer(mwindow.texture, mwindow.word, mwindow.pos, strlen(jeu.hiddenWord));
+            printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
+            SDL_RenderPresent(mwindow.renderer);
         }
     }
 
-    printf("Le mot etait : %s\n", mjeu.word);
+    printf("Le mot etait : %s\n", jeu.word);
 
     //Libération de la mémoire allouée
-    freeJeu(mjeu);
-    free(word);
-    free(pos);
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    freeJeu(jeu);
+    free(mwindow.word);
+    free(mwindow.pos);
+    SDL_DestroyTexture(mwindow.texture);
+    SDL_DestroyTexture(mwindow.tex_chiffres);
+    SDL_DestroyTexture(mwindow.tex_coeur);
+    SDL_DestroyRenderer(mwindow.renderer);
+    SDL_DestroyWindow(mwindow.window);
     SDL_Quit();
 
-    return 0;
+    return 1;
+}
+
+void display()
+{
+    int chiffresVies[2];
+    SDL_RenderClear(mwindow.renderer);
+    printRenderer(mwindow.texture, mwindow.word, mwindow.pos, strlen(jeu.hiddenWord));
+    printRenderer(mwindow.tex_coeur, &mwindow.size_coeur, &mwindow.pos_coeur, 1);
+    separeNum(jeu.lives, chiffresVies);
+    changeChiffres(jeu.lives);
+    printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[1]], &mwindow.pos_chiffres[0], 1);
+    printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[0]], &mwindow.pos_chiffres[1], 1);
+    printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
+    SDL_RenderPresent(mwindow.renderer);
 }
 
 void exitWithError(char* error)
@@ -66,37 +95,47 @@ void exitWithError(char* error)
     exit(EXIT_FAILURE);
 }
 
-void initLettres()
+void initLettresEtChiffres()
 {
-    lettre = 0;
+    mwindow.lettre = 0;
     int larg = 58;
-    lettres[0].x=0; lettres[0].y=0; lettres[0].w=38; lettres[0].h=larg; //a
-    lettres[1].x=48; lettres[1].y=0; lettres[1].w=38; lettres[1].h=larg; //b
-    lettres[2].x=96; lettres[2].y=0; lettres[2].w=38; lettres[2].h=larg; //c
-    lettres[3].x=144; lettres[3].y=0; lettres[3].w=38; lettres[3].h=larg; //d
-    lettres[4].x=192; lettres[4].y=0; lettres[4].w=38; lettres[4].h=larg; //e
-    lettres[5].x=240; lettres[5].y=0; lettres[5].w=38; lettres[5].h=larg; //f
-    lettres[6].x=288; lettres[6].y=0; lettres[6].w=38; lettres[6].h=larg; //g
-    lettres[7].x=336; lettres[7].y=0; lettres[7].w=38; lettres[7].h=larg; //h
-    lettres[8].x=384; lettres[8].y=0; lettres[8].w=9; lettres[8].h=larg; //i
-    lettres[9].x=403; lettres[9].y=0; lettres[9].w=38; lettres[9].h=larg; //j
-    lettres[10].x=451; lettres[10].y=0; lettres[10].w=38; lettres[10].h=larg; //k
-    lettres[11].x=499; lettres[11].y=0; lettres[11].w=38; lettres[11].h=larg; //l
-    lettres[12].x=547; lettres[12].y=0; lettres[12].w=47; lettres[12].h=larg; //m
-    lettres[13].x=605; lettres[13].y=0; lettres[13].w=38; lettres[13].h=larg; //n
-    lettres[14].x=653; lettres[14].y=0; lettres[14].w=38; lettres[14].h=larg; //o
-    lettres[15].x=701; lettres[15].y=0; lettres[15].w=38; lettres[15].h=larg; //p
-    lettres[16].x=749; lettres[16].y=0; lettres[16].w=47; lettres[16].h=larg; //q
-    lettres[17].x=806; lettres[17].y=0; lettres[17].w=38; lettres[17].h=larg; //r
-    lettres[18].x=854; lettres[18].y=0; lettres[18].w=38; lettres[18].h=larg; //s
-    lettres[19].x=902; lettres[19].y=0; lettres[19].w=47; lettres[19].h=larg; //t
-    lettres[20].x=960; lettres[20].y=0; lettres[20].w=38; lettres[20].h=larg; //u
-    lettres[21].x=1008; lettres[21].y=0; lettres[21].w=47; lettres[21].h=larg; //v
-    lettres[22].x=1066; lettres[22].y=0; lettres[22].w=47; lettres[22].h=larg; //w
-    lettres[23].x=1123; lettres[23].y=0; lettres[23].w=47; lettres[23].h=larg; //x
-    lettres[24].x=1181; lettres[24].y=0; lettres[24].w=47; lettres[24].h=larg; //y
-    lettres[25].x=1238; lettres[25].y=0; lettres[25].w=38; lettres[25].h=larg; //z
-    lettres[26].x=1286; lettres[26].y=0; lettres[26].w=38; lettres[26].h=larg; //_
+    mwindow.lettres[0].x=0; mwindow.lettres[0].y=0; mwindow.lettres[0].w=38; mwindow.lettres[0].h=larg; //a
+    mwindow.lettres[1].x=48; mwindow.lettres[1].y=0; mwindow.lettres[1].w=38; mwindow.lettres[1].h=larg; //b
+    mwindow.lettres[2].x=96; mwindow.lettres[2].y=0; mwindow.lettres[2].w=38; mwindow.lettres[2].h=larg; //c
+    mwindow.lettres[3].x=144; mwindow.lettres[3].y=0; mwindow.lettres[3].w=38; mwindow.lettres[3].h=larg; //d
+    mwindow.lettres[4].x=192; mwindow.lettres[4].y=0; mwindow.lettres[4].w=38; mwindow.lettres[4].h=larg; //e
+    mwindow.lettres[5].x=240; mwindow.lettres[5].y=0; mwindow.lettres[5].w=38; mwindow.lettres[5].h=larg; //f
+    mwindow.lettres[6].x=288; mwindow.lettres[6].y=0; mwindow.lettres[6].w=38; mwindow.lettres[6].h=larg; //g
+    mwindow.lettres[7].x=336; mwindow.lettres[7].y=0; mwindow.lettres[7].w=38; mwindow.lettres[7].h=larg; //h
+    mwindow.lettres[8].x=384; mwindow.lettres[8].y=0; mwindow.lettres[8].w=9; mwindow.lettres[8].h=larg; //i
+    mwindow.lettres[9].x=403; mwindow.lettres[9].y=0; mwindow.lettres[9].w=38; mwindow.lettres[9].h=larg; //j
+    mwindow.lettres[10].x=451; mwindow.lettres[10].y=0; mwindow.lettres[10].w=38; mwindow.lettres[10].h=larg; //k
+    mwindow.lettres[11].x=499; mwindow.lettres[11].y=0; mwindow.lettres[11].w=38; mwindow.lettres[11].h=larg; //l
+    mwindow.lettres[12].x=547; mwindow.lettres[12].y=0; mwindow.lettres[12].w=47; mwindow.lettres[12].h=larg; //m
+    mwindow.lettres[13].x=605; mwindow.lettres[13].y=0; mwindow.lettres[13].w=38; mwindow.lettres[13].h=larg; //n
+    mwindow.lettres[14].x=653; mwindow.lettres[14].y=0; mwindow.lettres[14].w=38; mwindow.lettres[14].h=larg; //o
+    mwindow.lettres[15].x=701; mwindow.lettres[15].y=0; mwindow.lettres[15].w=38; mwindow.lettres[15].h=larg; //p
+    mwindow.lettres[16].x=749; mwindow.lettres[16].y=0; mwindow.lettres[16].w=47; mwindow.lettres[16].h=larg; //q
+    mwindow.lettres[17].x=806; mwindow.lettres[17].y=0; mwindow.lettres[17].w=38; mwindow.lettres[17].h=larg; //r
+    mwindow.lettres[18].x=854; mwindow.lettres[18].y=0; mwindow.lettres[18].w=38; mwindow.lettres[18].h=larg; //s
+    mwindow.lettres[19].x=902; mwindow.lettres[19].y=0; mwindow.lettres[19].w=47; mwindow.lettres[19].h=larg; //t
+    mwindow.lettres[20].x=960; mwindow.lettres[20].y=0; mwindow.lettres[20].w=38; mwindow.lettres[20].h=larg; //u
+    mwindow.lettres[21].x=1008; mwindow.lettres[21].y=0; mwindow.lettres[21].w=47; mwindow.lettres[21].h=larg; //v
+    mwindow.lettres[22].x=1066; mwindow.lettres[22].y=0; mwindow.lettres[22].w=47; mwindow.lettres[22].h=larg; //w
+    mwindow.lettres[23].x=1123; mwindow.lettres[23].y=0; mwindow.lettres[23].w=47; mwindow.lettres[23].h=larg; //x
+    mwindow.lettres[24].x=1181; mwindow.lettres[24].y=0; mwindow.lettres[24].w=47; mwindow.lettres[24].h=larg; //y
+    mwindow.lettres[25].x=1238; mwindow.lettres[25].y=0; mwindow.lettres[25].w=38; mwindow.lettres[25].h=larg; //z
+    mwindow.lettres[26].x=1286; mwindow.lettres[26].y=0; mwindow.lettres[26].w=38; mwindow.lettres[26].h=larg; //_
+    mwindow.chiffres[0].x=0; mwindow.chiffres[0].y=0; mwindow.chiffres[0].w=38; mwindow.chiffres[0].h=larg; //0
+    mwindow.chiffres[1].x=48; mwindow.chiffres[1].y=0; mwindow.chiffres[1].w=9; mwindow.chiffres[1].h=larg; //1
+    mwindow.chiffres[2].x=67; mwindow.chiffres[2].y=0; mwindow.chiffres[2].w=38; mwindow.chiffres[2].h=larg; //2
+    mwindow.chiffres[3].x=115; mwindow.chiffres[3].y=0; mwindow.chiffres[3].w=38; mwindow.chiffres[3].h=larg; //3
+    mwindow.chiffres[4].x=163; mwindow.chiffres[4].y=0; mwindow.chiffres[4].w=38; mwindow.chiffres[4].h=larg; //4
+    mwindow.chiffres[5].x=211; mwindow.chiffres[5].y=0; mwindow.chiffres[5].w=38; mwindow.chiffres[5].h=larg; //5
+    mwindow.chiffres[6].x=259; mwindow.chiffres[6].y=0; mwindow.chiffres[6].w=38; mwindow.chiffres[6].h=larg; //6
+    mwindow.chiffres[7].x=307; mwindow.chiffres[7].y=0; mwindow.chiffres[7].w=38; mwindow.chiffres[7].h=larg; //7
+    mwindow.chiffres[8].x=355; mwindow.chiffres[8].y=0; mwindow.chiffres[8].w=38; mwindow.chiffres[8].h=larg; //8
+    mwindow.chiffres[9].x=403; mwindow.chiffres[9].y=0; mwindow.chiffres[9].w=38; mwindow.chiffres[9].h=larg; //9
 }
 
 //Fonction initialisant la fenêtre
@@ -106,76 +145,89 @@ void initWindow()
     if(SDL_Init(SDL_INIT_VIDEO) != 0) exitWithError("Initialisation Video");
 
     //Création de la fenêtre
-    window = NULL;
-    window = SDL_CreateWindow("Fenêtre test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    if(window == NULL) exitWithError("Creation fenetre");
+    mwindow.window = NULL;
+    mwindow.window = SDL_CreateWindow("Fenêtre test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    if(mwindow.window == NULL) exitWithError("Creation fenetre");
     
     //Création d'un rendu
-    renderer = NULL;
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if(renderer == NULL)
+    mwindow.renderer = NULL;
+    mwindow.renderer = SDL_CreateRenderer(mwindow.window, -1, SDL_RENDERER_ACCELERATED);
+    if(mwindow.renderer == NULL)
     {
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(mwindow.window);
         exitWithError("Creation rendu");
     }
 
     //Création d'une surface et d'une texture
-    surface = NULL;
-    texture = NULL;
+    mwindow.surface = NULL;
+    mwindow.texture = NULL;
 }
 
 //Fonction chargeant les sprites
-void loadSprite(char* sprite)
+SDL_Texture* loadSprite(char* sprite)
 {
-    surface = SDL_LoadBMP(sprite);
-    if(surface == NULL)
+    SDL_Texture* tex;
+    mwindow.surface = SDL_LoadBMP(sprite);
+    if(mwindow.surface == NULL)
     {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(mwindow.renderer);
+        SDL_DestroyWindow(mwindow.window);
         exitWithError("Creation surface");
     }
 
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    if(texture == NULL)
+    tex = SDL_CreateTextureFromSurface(mwindow.renderer, mwindow.surface);
+    SDL_FreeSurface(mwindow.surface);
+    if(tex == NULL)
     {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(mwindow.renderer);
+        SDL_DestroyWindow(mwindow.window);
         exitWithError("Creation texture");
     }
+
+    return tex;
 }
 
-void setSpriteSize(int w, int h)
+void setSpriteSize(int w, int h, SDL_Texture* tex, SDL_Rect* rec)
 {
     //Dimensions rectangle texture
     if(w==-1 && h==-1)
     {
-        if(SDL_QueryTexture(texture, NULL, NULL, &rectangle.w, &rectangle.h) != 0)
+        if(SDL_QueryTexture(tex, NULL, NULL, &(rec->w), &(rec->h)) != 0)
         {
-            SDL_DestroyTexture(texture);
-            SDL_DestroyRenderer(renderer);
-            SDL_DestroyWindow(window);
+            SDL_DestroyTexture(mwindow.texture);
+            SDL_DestroyTexture(mwindow.tex_chiffres);
+            SDL_DestroyTexture(mwindow.tex_coeur);
+            SDL_DestroyRenderer(mwindow.renderer);
+            SDL_DestroyWindow(mwindow.window);
             exitWithError("Chargement texture en memoire");
         }
     }
     else
     {
-        rectangle.w = w;
-        rectangle.h = h;
+        rec->w = w;
+        rec->h = h;
     }
 }
 
 void setSpritePos(int x, int y)
 {
-    rectangle.x = x;
-    rectangle.y = y;
+    mwindow.rectangle.x = x;
+    mwindow.rectangle.y = y;
 }
 
 void initVariables()
 {
-    running = true;
-    for(int i=0; i<4; i++) dir[i] = false;
-    over = false;
+    mwindow.running = true;
+    for(int i=0; i<4; i++) mwindow.dir[i] = false;
+    mwindow.over = false;
+    mwindow.lettre = 0;
+
+    mwindow.pos_coeur.x=WINDOW_WIDTH*0.05; mwindow.pos_coeur.y=WINDOW_HEIGHT-mwindow.chiffres[0].h-10; mwindow.pos_coeur.w=mwindow.chiffres[0].h; mwindow.pos_coeur.h=mwindow.chiffres[0].h;
+    mwindow.size_coeur.x=0; mwindow.size_coeur.y=0;
+
+    //mwindow.size_chiffres.x = 0; mwindow.size_chiffres.y = 0;
+    mwindow.pos_chiffres[0].x=mwindow.pos_coeur.x+mwindow.pos_coeur.w+15; mwindow.pos_chiffres[0].y=WINDOW_HEIGHT-mwindow.chiffres[0].h-10;
+    mwindow.pos_chiffres[1].y = mwindow.pos_chiffres[0].y;
 }
 
 //Fonction gérant les évènements
@@ -186,151 +238,151 @@ void treatEvents(SDL_Event event)
             switch(event.type)
             {
                 case SDL_QUIT :
-                    running = false;
+                    mwindow.running = false;
                     break;
                 case SDL_KEYDOWN :
                     switch(event.key.keysym.sym)
                     {
                         case SDLK_UP :
-                            dir[0] = true;
+                            mwindow.dir[0] = true;
                             break;
                         case SDLK_DOWN :
-                            dir[1] = true;
+                            mwindow.dir[1] = true;
                             break;
                         case SDLK_LEFT :
-                            dir[2] = true;
+                            mwindow.dir[2] = true;
                             break;
                         case SDLK_RIGHT :
-                            dir[3] = true;
+                            mwindow.dir[3] = true;
                             break;
                         case SDLK_a :
                             changeLetter(0);
-                            currentLetter = 'a';
+                            mwindow.currentLetter = 'a';
                             printf("A\n");
                             break;
                         case SDLK_b :
                             changeLetter(1);
-                            currentLetter = 'b';
+                            mwindow.currentLetter = 'b';
                             printf("B\n");
                             break;
                         case SDLK_c :
                             changeLetter(2);
-                            currentLetter = 'c';
+                            mwindow.currentLetter = 'c';
                             printf("C\n");
                             break;
                         case SDLK_d :
                             changeLetter(3);
-                            currentLetter = 'd';
+                            mwindow.currentLetter = 'd';
                             printf("D\n");
                             break;
                         case SDLK_e :
                             changeLetter(4);
-                            currentLetter = 'e';
+                            mwindow.currentLetter = 'e';
                             printf("E\n");
                             break;
                         case SDLK_f :
                             changeLetter(5);
-                            currentLetter = 'f';
+                            mwindow.currentLetter = 'f';
                             printf("F\n");
                             break;
                         case SDLK_g :
                             changeLetter(6);
-                            currentLetter = 'g';
+                            mwindow.currentLetter = 'g';
                             printf("G\n");
                             break;
                         case SDLK_h :
                             changeLetter(7);
-                            currentLetter = 'h';
+                            mwindow.currentLetter = 'h';
                             printf("H\n");
                             break;
                         case SDLK_i :
                             changeLetter(8);
-                            currentLetter = 'i';
+                            mwindow.currentLetter = 'i';
                             printf("I\n");
                             break;
                         case SDLK_j :
                             changeLetter(9);
-                            currentLetter = 'j';
+                            mwindow.currentLetter = 'j';
                             printf("J\n");
                             break;
                         case SDLK_k :
                             changeLetter(10);
-                            currentLetter = 'k';
+                            mwindow.currentLetter = 'k';
                             printf("K\n");
                             break;
                         case SDLK_l :
                             changeLetter(11);
-                            currentLetter = 'l';
+                            mwindow.currentLetter = 'l';
                             printf("L\n");
                             break;
                         case SDLK_m :
                             changeLetter(12);
-                            currentLetter = 'm';
+                            mwindow.currentLetter = 'm';
                             printf("M\n");
                             break;
                         case SDLK_n :
                             changeLetter(13);
-                            currentLetter = 'n';
+                            mwindow.currentLetter = 'n';
                             printf("N\n");
                             break;
                         case SDLK_o :
                             changeLetter(14);
-                            currentLetter = 'o';
+                            mwindow.currentLetter = 'o';
                             printf("O\n");
                             break;
                         case SDLK_p :
                             changeLetter(15);
-                            currentLetter = 'p';
+                            mwindow.currentLetter = 'p';
                             printf("P\n");
                             break;
                         case SDLK_q :
                             changeLetter(16);
-                            currentLetter = 'q';
+                            mwindow.currentLetter = 'q';
                             printf("Q\n");
                             break;
                         case SDLK_r :
                             changeLetter(17);
-                            currentLetter = 'r';
+                            mwindow.currentLetter = 'r';
                             printf("R\n");
                             break;
                         case SDLK_s :
                             changeLetter(18);
-                            currentLetter = 's';
+                            mwindow.currentLetter = 's';
                             printf("S\n");
                             break;
                         case SDLK_t :
                             changeLetter(19);
-                            currentLetter = 't';
+                            mwindow.currentLetter = 't';
                             printf("T\n");
                             break;
                         case SDLK_u :
                             changeLetter(20);
-                            currentLetter = 'u';
+                            mwindow.currentLetter = 'u';
                             printf("U\n");
                             break;
                         case SDLK_v :
                             changeLetter(21);
-                            currentLetter = 'v';
+                            mwindow.currentLetter = 'v';
                             printf("V\n");
                             break;
                         case SDLK_w :
                             changeLetter(22);
-                            currentLetter = 'w';
+                            mwindow.currentLetter = 'w';
                             printf("W\n");
                             break;
                         case SDLK_x :
                             changeLetter(23);
-                            currentLetter = 'x';
+                            mwindow.currentLetter = 'x';
                             printf("X\n");
                             break;
                         case SDLK_y :
                             changeLetter(24);
-                            currentLetter = 'y';
+                            mwindow.currentLetter = 'y';
                             printf("Y\n");
                             break;
                         case SDLK_z :
                             changeLetter(25);
-                            currentLetter = 'z';
+                            mwindow.currentLetter = 'z';
                             printf("Z\n");
                             break;
                         case SDLK_8 :
@@ -338,9 +390,8 @@ void treatEvents(SDL_Event event)
                             printf("_\n");
                             break;
                         case SDLK_RETURN :
-                            mjeu = nextTurn(mjeu, currentLetter);
-                            loadHiddenWord(mjeu);
-                            printf("ENTRER\n");
+                            jeu = nextTurn(jeu, mwindow.currentLetter);
+                            loadHiddenWord(jeu.hiddenWord);
                         default :
                             break;
                     }
@@ -349,16 +400,16 @@ void treatEvents(SDL_Event event)
                     switch(event.key.keysym.sym)
                     {
                         case SDLK_UP :
-                            dir[0] = false;
+                            mwindow.dir[0] = false;
                             break;
                         case SDLK_DOWN :
-                            dir[1] = false;
+                            mwindow.dir[1] = false;
                             break;
                         case SDLK_LEFT :
-                            dir[2] = false;
+                            mwindow.dir[2] = false;
                             break;
                         case SDLK_RIGHT :
-                            dir[3] = false;
+                            mwindow.dir[3] = false;
                             break;
                         default :
                             break;
@@ -372,10 +423,10 @@ void treatEvents(SDL_Event event)
 
 void updateSpritePos()
 {
-    if(dir[0] && rectangle.y>0) setSpritePos(rectangle.x, rectangle.y-1);
-    if(dir[1] && (rectangle.y+lettres[lettre].h)<WINDOW_HEIGHT) setSpritePos(rectangle.x, rectangle.y+1);
-    if(dir[2] && rectangle.x>0) setSpritePos(rectangle.x-1, rectangle.y);
-    if(dir[3] && (rectangle.x+lettres[lettre].w)<WINDOW_WIDTH) setSpritePos(rectangle.x+1, rectangle.y);
+    if(mwindow.dir[0] && mwindow.rectangle.y>0) setSpritePos(mwindow.rectangle.x, mwindow.rectangle.y-1);
+    if(mwindow.dir[1] && (mwindow.rectangle.y+mwindow.lettres[mwindow.lettre].h*size)<WINDOW_HEIGHT) setSpritePos(mwindow.rectangle.x, mwindow.rectangle.y+1);
+    if(mwindow.dir[2] && mwindow.rectangle.x>0) setSpritePos(mwindow.rectangle.x-1, mwindow.rectangle.y);
+    if(mwindow.dir[3] && (mwindow.rectangle.x+mwindow.lettres[mwindow.lettre].w*size)<WINDOW_WIDTH) setSpritePos(mwindow.rectangle.x+1, mwindow.rectangle.y);
     //if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
 }
 
@@ -383,14 +434,14 @@ void checkMouseOver(SDL_Rect rec)
 {
     int x, y;
     SDL_GetMouseState(&x, &y);
-    if(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h && !over)
+    if(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h && !mwindow.over)
     {
-        over = true;
+        mwindow.over = true;
         printf("Coloration\n");
     }
-    if(!(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h) && over)
+    if(!(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h) && mwindow.over)
     {
-        over = false;
+        mwindow.over = false;
         printf("Decoloration\n");
     }
 }
@@ -400,11 +451,13 @@ void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size)
 {
     for(int i=0; i<size; i++)
     {
-        if(SDL_RenderCopy(renderer, tex, &(sprite[i]), &(pos[i])) != 0)
+        if(SDL_RenderCopy(mwindow.renderer, tex, &(sprite[i]), &(pos[i])) != 0)
         {
-            SDL_DestroyTexture(texture);
-            SDL_DestroyRenderer(renderer);
-            SDL_DestroyWindow(window);
+            SDL_DestroyTexture(mwindow.texture);
+            SDL_DestroyTexture(mwindow.tex_chiffres);
+            SDL_DestroyTexture(mwindow.tex_coeur);
+            SDL_DestroyRenderer(mwindow.renderer);
+            SDL_DestroyWindow(mwindow.window);
             exitWithError("Chargement texture sur rendu");
         }
     }
@@ -412,17 +465,24 @@ void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size)
 
 void changeLetter(int i)
 {
-    lettre = i;
-    setSpriteSize(lettres[lettre].w, lettres[lettre].h);
+    mwindow.lettre = i;
+    setSpriteSize(mwindow.lettres[mwindow.lettre].w*size, mwindow.lettres[mwindow.lettre].h*size, mwindow.texture, &mwindow.rectangle);
 }
 
-void loadHiddenWord(Jeu jeu)
+void changeChiffres(int i)
 {
-    //Chargement du mot
-    hiddenWord = jeu.hiddenWord;
+    int val[2];
+    separeNum(jeu.lives, val);
+    setSpriteSize(mwindow.chiffres[val[1]].w, mwindow.chiffres[val[1]].h, mwindow.tex_chiffres, &mwindow.pos_chiffres[0]);
+    mwindow.pos_chiffres[1].x = mwindow.pos_chiffres[0].x + mwindow.chiffres[val[1]].w + 10;
+    setSpriteSize(mwindow.chiffres[val[0]].w, mwindow.chiffres[val[0]].h, mwindow.tex_chiffres, &mwindow.pos_chiffres[1]);
+}
+
+void loadHiddenWord(char *hiddenWord)
+{
     //Initialisation des variables des lettres et de leur pos
-    word = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
-    pos = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
+    mwindow.word = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
+    mwindow.pos = (SDL_Rect*) malloc(strlen(hiddenWord)*sizeof(SDL_Rect));
     //Pour chaque lettre on définit sa position dans texture et sa position sur le render
     int spriteLenght = 0;
     for(int i=0; i<strlen(hiddenWord); i++)
@@ -430,24 +490,33 @@ void loadHiddenWord(Jeu jeu)
         int num;
         if(hiddenWord[i] == '_') num = 26;
         else num = hiddenWord[i] - 97;
-        word[i].x = lettres[num].x;
-        word[i].y = lettres[num].y;
-        word[i].w = lettres[num].w;
-        word[i].h = lettres[num].h;
-        spriteLenght += word[i].w + 5;
+        mwindow.word[i].x = mwindow.lettres[num].x;
+        mwindow.word[i].y = mwindow.lettres[num].y;
+        mwindow.word[i].w = mwindow.lettres[num].w;
+        mwindow.word[i].h = mwindow.lettres[num].h;
+        spriteLenght += mwindow.word[i].w + 5;
     }
     for(int i=0; i<strlen(hiddenWord); i++)
     {
         if(i != 0)
         {
-            pos[i].x = pos[i-1].x + pos[i-1].w + 5;
+            mwindow.pos[i].x = mwindow.pos[i-1].x + mwindow.pos[i-1].w + 5;
         }
         else
         {
-            pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
+            mwindow.pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
         }
-        pos[i].y = 30;
-        pos[i].w = word[i].w;
-        pos[i].h = word[i].h;
+        mwindow.pos[i].y = 30;
+        mwindow.pos[i].w = mwindow.word[i].w;
+        mwindow.pos[i].h = mwindow.word[i].h;
+    }
+}
+
+void separeNum(int num, int *val)
+{
+    for(int i=0; i<2; i++)
+    {
+        val[i] = num%10;
+        num /= 10;
     }
 }
