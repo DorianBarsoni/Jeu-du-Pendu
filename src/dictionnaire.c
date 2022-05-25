@@ -12,6 +12,14 @@ dictionnaire initDic()
     if(fichier == NULL) 
     {
         printf("No such file\n");
+        FILE* err = fopen("error.txt", "w");
+        if(err == NULL)
+        {
+            printf("Unable to create file\n");
+            exit(0);
+        }
+        fputs("Aucun fichier mots.txt dans le répertoire Jeu-du-Pendu", err);
+        fclose(err);
         exit(0);
     }
 
@@ -30,6 +38,14 @@ dictionnaire initDic()
     if(fichier == NULL) 
     {
         printf("No such file\n");
+        FILE* err = fopen("error.txt", "w");
+        if(err == NULL)
+        {
+            printf("Unable to create file\n");
+            exit(0);
+        }
+        fputs("Aucun fichier mots.txt dans le répertoire Jeu-du-Pendu", err);
+        fclose(err);
         exit(0);
     }
 
