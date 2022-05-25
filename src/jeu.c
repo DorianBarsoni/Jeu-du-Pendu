@@ -12,16 +12,13 @@ Jeu initJeu()
     Jeu jeu;
 
     //Initialisation du mot et du mot caché
-    char *tmp = selectWord();
-    jeu.word = (char*) malloc((strlen(tmp) + 1)*sizeof(char));
-    jeu.hiddenWord = (char*) malloc((strlen(tmp) + 1)*sizeof(char));
-    for(int i=0; i<strlen(tmp); i++)
+    jeu.word = selectWord();
+    jeu.hiddenWord = (char*) malloc((strlen(jeu.word) + 1)*sizeof(char));
+    for(int i=0; i<strlen(jeu.word); i++)
     {
-        jeu.word[i] = tmp[i];
         jeu.hiddenWord[i] = '_';
     }
-    jeu.word[strlen(tmp)] = 0;
-    jeu.hiddenWord[strlen(tmp)] = 0;
+    jeu.hiddenWord[strlen(jeu.word)] = 0;
 
     //Initialisation du nombre de vie et du nombre de lettres trouvées
     jeu.lives = 10;

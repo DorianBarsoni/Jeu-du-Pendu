@@ -3,21 +3,30 @@
 #include <string.h>
 #include <time.h>
 
-void separe(int num);
+char* copyfromfile();
 
 int main()
 {
-    separe(52);
+   char* mword = copyfromfile(); 
     
     return EXIT_SUCCESS;
 }
 
-void separe(int num)
+char* copyfromfile()
 {
-    while(num != 0)
+     FILE* fichier = fopen("src/test.txt", "r");
+    if(fichier == NULL) 
     {
-        int reste = num%10;
-        printf("%d ");
-        num /= 10; 
+        printf("No such file\n");
     }
+
+    char buf[100];
+    int i = 0;
+    while (fscanf(fichier,"%s", buf) == 1)
+    {
+        char* word = buf;
+        printf("%s\n", word);
+        return word;
+    }
+
 }

@@ -9,8 +9,13 @@
 #include "jeu.h"
 #include "dictionnaire.h"
 
-#define WINDOW_WIDTH 1220
-#define WINDOW_HEIGHT 840
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 640
+
+#define LETTER_SIZE 2.5
+#define WORD_SIZE 1
+#define FIGURE_SIZE 1
+#define HEART_SIZE 1
 
 typedef struct {
     //Tableau contenant les pos et les tailles des lettres
@@ -33,7 +38,7 @@ typedef struct {
     //Lettres
     SDL_Texture *texture; SDL_Rect rectangle;
     //Chiffres
-    SDL_Texture *tex_chiffres; SDL_Rect size_chiffres; SDL_Rect pos_chiffres[2];
+    SDL_Texture *tex_chiffres; SDL_Rect pos_chiffres[2];
     //Coeur
     SDL_Texture* tex_coeur; SDL_Rect size_coeur; SDL_Rect pos_coeur;
     
@@ -41,10 +46,6 @@ typedef struct {
     SDL_Event event;
     //Booléen d'arrêt de la fenêtre
     bool running;
-    //Tableau de booléen pour les 4 directions
-    bool dir[4];
-    //Booléen de passage de souris sur la lettre sélectionnée
-    bool over;
     //Dernière lettre sélectionnée
     int lettre;
 }Window;
@@ -60,8 +61,6 @@ void setSpritePos(int x, int y);
 void setSpriteSize(int w, int h, SDL_Texture* tex, SDL_Rect* rec);
 void initVariables();
 void treatEvents(SDL_Event event);
-void updateSpritePos();
-void checkMouseOver(SDL_Rect rec);
 void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size);
 void changeLetter(int i);
 void changeChiffres(int i);

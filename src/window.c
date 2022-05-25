@@ -12,10 +12,9 @@ int myWindow()
     mwindow.texture = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
     mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
     mwindow.tex_coeur = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\coeur.bmp");
-    setSpritePos(WINDOW_WIDTH/2 - mwindow.lettres[mwindow.lettre].w*size/2, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*size/2);
-    setSpriteSize(mwindow.lettres[mwindow.lettre].w*size, mwindow.lettres[mwindow.lettre].h*size, mwindow.texture, &mwindow.rectangle);
+    setSpritePos((WINDOW_WIDTH-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)*0.85, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2);
+    setSpriteSize(mwindow.lettres[mwindow.lettre].w*LETTER_SIZE, mwindow.lettres[mwindow.lettre].h*LETTER_SIZE, mwindow.texture, &mwindow.rectangle);
     setSpriteSize(-1, -1, mwindow.tex_coeur, &mwindow.size_coeur);
-    setSpriteSize(-1, -1, mwindow.tex_chiffres, &mwindow.size_chiffres);
     initVariables();
     int i=0;
 
@@ -28,9 +27,6 @@ int myWindow()
     while(mwindow.running)
     {
         treatEvents(mwindow.event);
-        updateSpritePos();
-        checkMouseOver(mwindow.rectangle);
-        
         display();
 
         if(i%4 == 0) SDL_Delay(1);
@@ -38,6 +34,7 @@ int myWindow()
 
         if(jeu.lives == 0 || jeu.lettersFound == strlen(jeu.word))
         {
+            printf("mot : %s %d\n", jeu.word, strlen(jeu.word));
             loadHiddenWord(jeu.word);
             for(int i=0; i<2; i++)
             {
@@ -146,7 +143,7 @@ void initWindow()
 
     //Création de la fenêtre
     mwindow.window = NULL;
-    mwindow.window = SDL_CreateWindow("Fenêtre test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    mwindow.window = SDL_CreateWindow("Pendu", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if(mwindow.window == NULL) exitWithError("Creation fenetre");
     
     //Création d'un rendu
@@ -218,15 +215,13 @@ void setSpritePos(int x, int y)
 void initVariables()
 {
     mwindow.running = true;
-    for(int i=0; i<4; i++) mwindow.dir[i] = false;
-    mwindow.over = false;
     mwindow.lettre = 0;
 
-    mwindow.pos_coeur.x=WINDOW_WIDTH*0.05; mwindow.pos_coeur.y=WINDOW_HEIGHT-mwindow.chiffres[0].h-10; mwindow.pos_coeur.w=mwindow.chiffres[0].h; mwindow.pos_coeur.h=mwindow.chiffres[0].h;
+    mwindow.pos_coeur.w=mwindow.chiffres[0].h*HEART_SIZE; mwindow.pos_coeur.h=mwindow.chiffres[0].h*HEART_SIZE;
+    mwindow.pos_coeur.x=(WINDOW_WIDTH-mwindow.pos_coeur.w)*0.02; mwindow.pos_coeur.y=WINDOW_HEIGHT-mwindow.chiffres[0].h*HEART_SIZE-10;
     mwindow.size_coeur.x=0; mwindow.size_coeur.y=0;
 
-    //mwindow.size_chiffres.x = 0; mwindow.size_chiffres.y = 0;
-    mwindow.pos_chiffres[0].x=mwindow.pos_coeur.x+mwindow.pos_coeur.w+15; mwindow.pos_chiffres[0].y=WINDOW_HEIGHT-mwindow.chiffres[0].h-10;
+    mwindow.pos_chiffres[0].x=mwindow.pos_coeur.x+mwindow.pos_coeur.w+15; mwindow.pos_chiffres[0].y=WINDOW_HEIGHT-mwindow.chiffres[0].h*FIGURE_SIZE-10;
     mwindow.pos_chiffres[1].y = mwindow.pos_chiffres[0].y;
 }
 
@@ -243,18 +238,6 @@ void treatEvents(SDL_Event event)
                 case SDL_KEYDOWN :
                     switch(event.key.keysym.sym)
                     {
-                        case SDLK_UP :
-                            mwindow.dir[0] = true;
-                            break;
-                        case SDLK_DOWN :
-                            mwindow.dir[1] = true;
-                            break;
-                        case SDLK_LEFT :
-                            mwindow.dir[2] = true;
-                            break;
-                        case SDLK_RIGHT :
-                            mwindow.dir[3] = true;
-                            break;
                         case SDLK_a :
                             changeLetter(0);
                             mwindow.currentLetter = 'a';
@@ -396,54 +379,11 @@ void treatEvents(SDL_Event event)
                             break;
                     }
                     break;
-                case SDL_KEYUP :
-                    switch(event.key.keysym.sym)
-                    {
-                        case SDLK_UP :
-                            mwindow.dir[0] = false;
-                            break;
-                        case SDLK_DOWN :
-                            mwindow.dir[1] = false;
-                            break;
-                        case SDLK_LEFT :
-                            mwindow.dir[2] = false;
-                            break;
-                        case SDLK_RIGHT :
-                            mwindow.dir[3] = false;
-                            break;
-                        default :
-                            break;
-                    }
-                    break;
+
                 default :
                     break;
             }
         }
-}
-
-void updateSpritePos()
-{
-    if(mwindow.dir[0] && mwindow.rectangle.y>0) setSpritePos(mwindow.rectangle.x, mwindow.rectangle.y-1);
-    if(mwindow.dir[1] && (mwindow.rectangle.y+mwindow.lettres[mwindow.lettre].h*size)<WINDOW_HEIGHT) setSpritePos(mwindow.rectangle.x, mwindow.rectangle.y+1);
-    if(mwindow.dir[2] && mwindow.rectangle.x>0) setSpritePos(mwindow.rectangle.x-1, mwindow.rectangle.y);
-    if(mwindow.dir[3] && (mwindow.rectangle.x+mwindow.lettres[mwindow.lettre].w*size)<WINDOW_WIDTH) setSpritePos(mwindow.rectangle.x+1, mwindow.rectangle.y);
-    //if(dir[0] || dir[1] || dir[2] || dir[3]) printf("Coordonnees : %d %d\n", rectangle.x, rectangle.y);
-}
-
-void checkMouseOver(SDL_Rect rec)
-{
-    int x, y;
-    SDL_GetMouseState(&x, &y);
-    if(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h && !mwindow.over)
-    {
-        mwindow.over = true;
-        printf("Coloration\n");
-    }
-    if(!(rec.x<x && x<rec.x+rec.w && rec.y<y && y<rec.y+rec.h) && mwindow.over)
-    {
-        mwindow.over = false;
-        printf("Decoloration\n");
-    }
 }
 
 //Fonction affichant le rendu sur la fenêtre
@@ -466,16 +406,16 @@ void printRenderer(SDL_Texture* tex, SDL_Rect* sprite, SDL_Rect* pos, int size)
 void changeLetter(int i)
 {
     mwindow.lettre = i;
-    setSpriteSize(mwindow.lettres[mwindow.lettre].w*size, mwindow.lettres[mwindow.lettre].h*size, mwindow.texture, &mwindow.rectangle);
+    setSpriteSize(mwindow.lettres[mwindow.lettre].w*LETTER_SIZE, mwindow.lettres[mwindow.lettre].h*LETTER_SIZE, mwindow.texture, &mwindow.rectangle);
 }
 
 void changeChiffres(int i)
 {
     int val[2];
     separeNum(jeu.lives, val);
-    setSpriteSize(mwindow.chiffres[val[1]].w, mwindow.chiffres[val[1]].h, mwindow.tex_chiffres, &mwindow.pos_chiffres[0]);
-    mwindow.pos_chiffres[1].x = mwindow.pos_chiffres[0].x + mwindow.chiffres[val[1]].w + 10;
-    setSpriteSize(mwindow.chiffres[val[0]].w, mwindow.chiffres[val[0]].h, mwindow.tex_chiffres, &mwindow.pos_chiffres[1]);
+    setSpriteSize(mwindow.chiffres[val[1]].w*FIGURE_SIZE, mwindow.chiffres[val[1]].h*FIGURE_SIZE, mwindow.tex_chiffres, &mwindow.pos_chiffres[0]);
+    mwindow.pos_chiffres[1].x = mwindow.pos_chiffres[0].x + mwindow.chiffres[val[1]].w*FIGURE_SIZE + 10;
+    setSpriteSize(mwindow.chiffres[val[0]].w*FIGURE_SIZE, mwindow.chiffres[val[0]].h*FIGURE_SIZE, mwindow.tex_chiffres, &mwindow.pos_chiffres[1]);
 }
 
 void loadHiddenWord(char *hiddenWord)
@@ -494,7 +434,7 @@ void loadHiddenWord(char *hiddenWord)
         mwindow.word[i].y = mwindow.lettres[num].y;
         mwindow.word[i].w = mwindow.lettres[num].w;
         mwindow.word[i].h = mwindow.lettres[num].h;
-        spriteLenght += mwindow.word[i].w + 5;
+        spriteLenght += mwindow.word[i].w*WORD_SIZE + 5;
     }
     for(int i=0; i<strlen(hiddenWord); i++)
     {
@@ -507,8 +447,8 @@ void loadHiddenWord(char *hiddenWord)
             mwindow.pos[i].x = WINDOW_WIDTH/2 - spriteLenght/2;
         }
         mwindow.pos[i].y = 30;
-        mwindow.pos[i].w = mwindow.word[i].w;
-        mwindow.pos[i].h = mwindow.word[i].h;
+        mwindow.pos[i].w = mwindow.word[i].w*WORD_SIZE;
+        mwindow.pos[i].h = mwindow.word[i].h*WORD_SIZE;
     }
 }
 
