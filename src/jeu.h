@@ -15,6 +15,7 @@ Jeu initJeu();
 void affiche(Jeu jeu);
 bool isIn(char c, char* word);
 Jeu nextTurn(Jeu jeu, char letter);
+int alreadyEnter(Jeu jeu, int lettre);
 void freeJeu(Jeu jeu);
 
 #endif

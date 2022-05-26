@@ -16,16 +16,24 @@
 #define WORD_SIZE 1
 #define FIGURE_SIZE 1
 #define HEART_SIZE 1
+#define FOUND_SIZE 0.45
+#define NOTIF_SIZE 0.6
 
 typedef struct {
     //Tableau contenant les pos et les tailles des lettres
-    SDL_Rect lettres[27];
+    SDL_Rect lettres[28];
     //Tableau contenant les pos et les tailles des chiffres
     SDL_Rect chiffres[10];
     //Tableau contenant les pos et les taille des lettres du mot
     SDL_Rect *word;//
     //Tableau contenant les positions des lettres du mot sur le rendu
     SDL_Rect *pos;//
+    //Tableau contenant les positions des notifications
+    SDL_Rect *size_notif, *pos_notif;//
+
+    //Lettres restantes
+    SDL_Rect size_found[26]; SDL_Rect pos_found[26];
+
     //Dernier caractère
     char currentLetter;
     //Fenêtre
@@ -66,5 +74,8 @@ void changeLetter(int i);
 void changeChiffres(int i);
 void loadHiddenWord(char *loadHiddenWord);
 void separeNum(int num, int *val);
+void initFoundLetters();
+void updateFoundLetters();
+void loadNotif(char* txt);
 
 #endif

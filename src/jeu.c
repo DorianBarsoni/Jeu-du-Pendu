@@ -60,7 +60,7 @@ Jeu nextTurn(Jeu jeu, char letter)
     }
     
     //Si la lettre est déjà découverte
-    if(jeu.lettres[letter-97])
+    if(alreadyEnter(jeu, letter))
     {
         printf("! Lettre deja entree !\n"); //On ne fait rien
     }
@@ -95,6 +95,12 @@ Jeu nextTurn(Jeu jeu, char letter)
     printf("\n\n\n");
 
     return jeu;
+}
+
+int alreadyEnter(Jeu jeu, int lettre)
+{
+    if(jeu.lettres[lettre-97]) return 1;
+    else return 0;
 }
 
 void freeJeu(Jeu jeu)

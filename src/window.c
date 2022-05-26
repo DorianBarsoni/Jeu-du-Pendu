@@ -3,11 +3,13 @@
 
 Jeu jeu;
 Window mwindow;
-double size = 2;
+bool notif = false;
+int taille = 0;
 
 int myWindow()
 {
     initLettresEtChiffres();
+    initFoundLetters();
     initWindow();
     mwindow.texture = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
     mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
@@ -27,6 +29,7 @@ int myWindow()
     while(mwindow.running)
     {
         treatEvents(mwindow.event);
+        updateFoundLetters();
         display();
 
         if(i%4 == 0) SDL_Delay(1);
@@ -47,6 +50,7 @@ int myWindow()
             printf("%s\n", jeu.word);
             SDL_Delay(200);
             jeu = initJeu();
+            initFoundLetters();
             loadHiddenWord(jeu.hiddenWord);
             SDL_RenderClear(mwindow.renderer);
             printRenderer(mwindow.texture, mwindow.word, mwindow.pos, strlen(jeu.hiddenWord));
@@ -82,7 +86,17 @@ void display()
     printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[1]], &mwindow.pos_chiffres[0], 1);
     printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[0]], &mwindow.pos_chiffres[1], 1);
     printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
-    SDL_RenderPresent(mwindow.renderer);
+    printRenderer(mwindow.texture, mwindow.size_found, mwindow.pos_found, 26);
+    /*if(notif)
+    {
+        printRenderer(mwindow.texture, mwindow.size_notif, mwindow.pos_notif, taille);
+        SDL_RenderPresent(mwindow.renderer);
+        SDL_Delay(500);
+        notif = false;
+        free(mwindow.size_notif);
+        free(mwindow.pos_notif);
+    }
+    else*/ SDL_RenderPresent(mwindow.renderer);
 }
 
 void exitWithError(char* error)
@@ -123,6 +137,7 @@ void initLettresEtChiffres()
     mwindow.lettres[24].x=1181; mwindow.lettres[24].y=0; mwindow.lettres[24].w=47; mwindow.lettres[24].h=larg; //y
     mwindow.lettres[25].x=1238; mwindow.lettres[25].y=0; mwindow.lettres[25].w=38; mwindow.lettres[25].h=larg; //z
     mwindow.lettres[26].x=1286; mwindow.lettres[26].y=0; mwindow.lettres[26].w=38; mwindow.lettres[26].h=larg; //_
+    mwindow.lettres[27].x=1334; mwindow.lettres[27].y=0; mwindow.lettres[27].w=38; mwindow.lettres[27].h=larg; //" "
     mwindow.chiffres[0].x=0; mwindow.chiffres[0].y=0; mwindow.chiffres[0].w=38; mwindow.chiffres[0].h=larg; //0
     mwindow.chiffres[1].x=48; mwindow.chiffres[1].y=0; mwindow.chiffres[1].w=9; mwindow.chiffres[1].h=larg; //1
     mwindow.chiffres[2].x=67; mwindow.chiffres[2].y=0; mwindow.chiffres[2].w=38; mwindow.chiffres[2].h=larg; //2
@@ -373,8 +388,15 @@ void treatEvents(SDL_Event event)
                             printf("_\n");
                             break;
                         case SDLK_RETURN :
+                            if(alreadyEnter(jeu, mwindow.currentLetter)) loadNotif("lettre deja entree");
                             jeu = nextTurn(jeu, mwindow.currentLetter);
                             loadHiddenWord(jeu.hiddenWord);
+                            if(jeu.lives==1 && strcmp(jeu.word, jeu.hiddenWord)!=0)
+                            {
+                                display();
+                                //SDL_RenderClear(mwindow.renderer);
+                                loadNotif("une seule vie");
+                            }
                         default :
                             break;
                     }
@@ -459,4 +481,66 @@ void separeNum(int num, int *val)
         val[i] = num%10;
         num /= 10;
     }
+}
+
+void initFoundLetters()
+{
+    for(int i=0; i<26; i++)
+    {
+        mwindow.size_found[i].x=mwindow.lettres[i].x; mwindow.size_found[i].y=0; mwindow.size_found[i].w=mwindow.lettres[i].w; mwindow.size_found[i].h=mwindow.lettres[i].h;
+        if(i==0) mwindow.pos_found[0].x=WINDOW_WIDTH*0.24;
+        else mwindow.pos_found[i].x=mwindow.pos_found[i-1].x+mwindow.size_found[i-1].w*FOUND_SIZE+5;
+        mwindow.pos_found[i].y=WINDOW_HEIGHT-mwindow.size_found[i].h*FOUND_SIZE-10;
+        mwindow.pos_found[i].w=mwindow.size_found[i].w*FOUND_SIZE;
+        mwindow.pos_found[i].h=mwindow.size_found[i].h*FOUND_SIZE;
+    }
+}
+
+void updateFoundLetters()
+{
+    for(int i=0; i<26; i++)
+    {
+        if(jeu.lettres[i])
+        {
+            mwindow.size_found[i].x=mwindow.lettres[27].x;
+            mwindow.size_found[i].w=mwindow.lettres[i].w;
+            mwindow.size_found[i].h=mwindow.lettres[27].h;
+        }
+    }
+}
+
+void loadNotif(char* txt)
+{
+    mwindow.size_notif = (SDL_Rect*) malloc(strlen(txt)*sizeof(SDL_Rect));
+    mwindow.pos_notif = (SDL_Rect*) malloc(strlen(txt)*sizeof(SDL_Rect));
+    int lg = 0;
+    int y=58, larg=58;
+    for(int i=0; i<strlen(txt); i++)
+    {
+        int num;
+        if(txt[i]==' ') num=27;
+        else num=txt[i]-97;
+        mwindow.size_notif[i].x=mwindow.lettres[num].x;
+        mwindow.size_notif[i].y=y;
+        mwindow.size_notif[i].w=mwindow.lettres[num].w;
+        mwindow.size_notif[i].h=larg;
+
+        lg += mwindow.size_notif[i].w*NOTIF_SIZE + 3;
+    }
+
+    for(int i=0; i<strlen(txt); i++)
+    {
+        if(i==0) mwindow.pos_notif[i].x=WINDOW_WIDTH/2 - lg/2;
+        else mwindow.pos_notif[i].x = mwindow.pos_notif[i-1].x + mwindow.size_notif[i-1].w*NOTIF_SIZE + 3;
+
+        mwindow.pos_notif[i].y=WINDOW_HEIGHT/2 - larg/2;
+        mwindow.pos_notif[i].w=mwindow.size_notif[i].w*NOTIF_SIZE;
+        mwindow.pos_notif[i].h=mwindow.size_notif[i].h*NOTIF_SIZE;
+    }
+
+    printRenderer(mwindow.texture, mwindow.size_notif, mwindow.pos_notif, strlen(txt));
+    SDL_RenderPresent(mwindow.renderer);
+    SDL_Delay(500);
+    free(mwindow.size_notif);
+    free(mwindow.pos_notif);
 }
