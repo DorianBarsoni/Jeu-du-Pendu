@@ -3,8 +3,7 @@
 
 Jeu jeu;
 Window mwindow;
-bool notif = false;
-int taille = 0;
+bool notif_vie = false;
 
 int myWindow()
 {
@@ -14,11 +13,16 @@ int myWindow()
     mwindow.texture = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
     mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
     mwindow.tex_coeur = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\coeur.bmp");
-    setSpritePos((WINDOW_WIDTH-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)*0.85, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2);
+    mwindow.tex_bordures = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bordures.bmp");
+    setSpritePos((WINDOW_WIDTH-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)*0.85, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2, &mwindow.rectangle);
     setSpriteSize(mwindow.lettres[mwindow.lettre].w*LETTER_SIZE, mwindow.lettres[mwindow.lettre].h*LETTER_SIZE, mwindow.texture, &mwindow.rectangle);
+    setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_bordures);
+    setSpriteSize(mwindow.lettres[19].w*LETTER_SIZE + 30, mwindow.lettres[19].h*LETTER_SIZE + 30, mwindow.tex_bordures, &mwindow.pos_bordures);
+    setSpritePos(0, 0, &mwindow.size_word_bordures);
+    setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_word_bordures);
+    setSpritePos(mwindow.rectangle.x - (mwindow.pos_bordures.w-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)/2, mwindow.rectangle.y - (mwindow.pos_bordures.h-mwindow.lettres[mwindow.lettre].h*LETTER_SIZE)/2, &mwindow.pos_bordures);
     setSpriteSize(-1, -1, mwindow.tex_coeur, &mwindow.size_coeur);
     initVariables();
-    int i=0;
 
     //Chargement du mot
     jeu = initJeu();
@@ -30,15 +34,24 @@ int myWindow()
     {
         treatEvents(mwindow.event);
         updateFoundLetters();
+        setSpritePos(mwindow.pos_bordures.x + (mwindow.pos_bordures.w-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)/2 + 2, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2, &mwindow.rectangle);
+        setWordBordure();
         display();
-
-        if(i%4 == 0) SDL_Delay(1);
-        i++;
 
         if(jeu.lives == 0 || jeu.lettersFound == strlen(jeu.word))
         {
             printf("mot : %s %d\n", jeu.word, strlen(jeu.word));
             loadHiddenWord(jeu.word);
+            if(jeu.lives == 0)
+            {
+                setSpritePos(0,84,&mwindow.size_word_bordures);
+                for(int i=0; i<strlen(jeu.hiddenWord); i++) mwindow.word[i].y=58;
+            }
+            else
+            {
+                setSpritePos(0,168,&mwindow.size_word_bordures);
+                for(int i=0; i<strlen(jeu.hiddenWord); i++) mwindow.word[i].y=116;
+            }
             for(int i=0; i<2; i++)
             {
                 SDL_RenderClear(mwindow.renderer);
@@ -52,10 +65,7 @@ int myWindow()
             jeu = initJeu();
             initFoundLetters();
             loadHiddenWord(jeu.hiddenWord);
-            SDL_RenderClear(mwindow.renderer);
-            printRenderer(mwindow.texture, mwindow.word, mwindow.pos, strlen(jeu.hiddenWord));
-            printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
-            SDL_RenderPresent(mwindow.renderer);
+            notif_vie = false;
         }
     }
 
@@ -68,6 +78,7 @@ int myWindow()
     SDL_DestroyTexture(mwindow.texture);
     SDL_DestroyTexture(mwindow.tex_chiffres);
     SDL_DestroyTexture(mwindow.tex_coeur);
+    SDL_DestroyTexture(mwindow.tex_bordures);
     SDL_DestroyRenderer(mwindow.renderer);
     SDL_DestroyWindow(mwindow.window);
     SDL_Quit();
@@ -79,6 +90,8 @@ void display()
 {
     int chiffresVies[2];
     SDL_RenderClear(mwindow.renderer);
+    printRenderer(mwindow.tex_bordures, &mwindow.size_word_bordures, &mwindow.pos_word_bordures, 1);
+    printRenderer(mwindow.tex_bordures, &mwindow.size_bordures, &mwindow.pos_bordures, 1);
     printRenderer(mwindow.texture, mwindow.word, mwindow.pos, strlen(jeu.hiddenWord));
     printRenderer(mwindow.tex_coeur, &mwindow.size_coeur, &mwindow.pos_coeur, 1);
     separeNum(jeu.lives, chiffresVies);
@@ -87,16 +100,7 @@ void display()
     printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[0]], &mwindow.pos_chiffres[1], 1);
     printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
     printRenderer(mwindow.texture, mwindow.size_found, mwindow.pos_found, 26);
-    /*if(notif)
-    {
-        printRenderer(mwindow.texture, mwindow.size_notif, mwindow.pos_notif, taille);
-        SDL_RenderPresent(mwindow.renderer);
-        SDL_Delay(500);
-        notif = false;
-        free(mwindow.size_notif);
-        free(mwindow.pos_notif);
-    }
-    else*/ SDL_RenderPresent(mwindow.renderer);
+    SDL_RenderPresent(mwindow.renderer);
 }
 
 void exitWithError(char* error)
@@ -221,10 +225,10 @@ void setSpriteSize(int w, int h, SDL_Texture* tex, SDL_Rect* rec)
     }
 }
 
-void setSpritePos(int x, int y)
+void setSpritePos(int x, int y, SDL_Rect* rec)
 {
-    mwindow.rectangle.x = x;
-    mwindow.rectangle.y = y;
+    rec->x = x;
+    rec->y = y;
 }
 
 void initVariables()
@@ -391,11 +395,12 @@ void treatEvents(SDL_Event event)
                             if(alreadyEnter(jeu, mwindow.currentLetter)) loadNotif("lettre deja entree");
                             jeu = nextTurn(jeu, mwindow.currentLetter);
                             loadHiddenWord(jeu.hiddenWord);
-                            if(jeu.lives==1 && strcmp(jeu.word, jeu.hiddenWord)!=0)
+                            if(jeu.lives==1 && !notif_vie)
                             {
                                 display();
                                 //SDL_RenderClear(mwindow.renderer);
                                 loadNotif("une seule vie");
+                                notif_vie = true;
                             }
                         default :
                             break;
@@ -453,7 +458,7 @@ void loadHiddenWord(char *hiddenWord)
         if(hiddenWord[i] == '_') num = 26;
         else num = hiddenWord[i] - 97;
         mwindow.word[i].x = mwindow.lettres[num].x;
-        mwindow.word[i].y = mwindow.lettres[num].y;
+        mwindow.word[i].y = 0;
         mwindow.word[i].w = mwindow.lettres[num].w;
         mwindow.word[i].h = mwindow.lettres[num].h;
         spriteLenght += mwindow.word[i].w*WORD_SIZE + 5;
@@ -538,9 +543,38 @@ void loadNotif(char* txt)
         mwindow.pos_notif[i].h=mwindow.size_notif[i].h*NOTIF_SIZE;
     }
 
+    setNotifBordure(txt);
+
+    printRenderer(mwindow.tex_bordures, &mwindow.size_notif_bordures, &mwindow.pos_notif_bordures, 1);
     printRenderer(mwindow.texture, mwindow.size_notif, mwindow.pos_notif, strlen(txt));
     SDL_RenderPresent(mwindow.renderer);
     SDL_Delay(500);
     free(mwindow.size_notif);
     free(mwindow.pos_notif);
+}
+
+void setWordBordure()
+{
+    setSpritePos(0, 0, &mwindow.size_word_bordures);
+    int lg = 0;
+    for(int i=0; i<strlen(jeu.hiddenWord); i++)
+    {
+        lg += mwindow.word[i].w*WORD_SIZE + 5;
+    }
+
+    setSpriteSize(lg+30, mwindow.lettres[mwindow.lettre].h+30, mwindow.tex_bordures, &mwindow.pos_word_bordures);
+    setSpritePos(mwindow.pos[0].x-15-3, mwindow.pos[0].y-15,&mwindow.pos_word_bordures);
+}
+
+void setNotifBordure(char* txt)
+{
+    int lg = 0;
+    for(int i=0; i<strlen(txt); i++)
+    {
+        lg += mwindow.size_notif[i].w*NOTIF_SIZE + 3;
+    }
+    setSpritePos(0, 84, &mwindow.size_notif_bordures);
+    setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_notif_bordures);
+    setSpriteSize(lg+30, mwindow.lettres[mwindow.lettre].h+30, mwindow.tex_bordures, &mwindow.pos_notif_bordures);
+    setSpritePos(mwindow.pos_notif[0].x - (mwindow.pos_notif_bordures.w-lg)/2 - 4, mwindow.pos_notif[0].y - (mwindow.pos_notif_bordures.h-mwindow.size_notif[0].h*NOTIF_SIZE)/2, &mwindow.pos_notif_bordures);
 }

@@ -9,8 +9,8 @@
 #include "jeu.h"
 #include "dictionnaire.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 640
+#define WINDOW_WIDTH 1220
+#define WINDOW_HEIGHT 1000
 
 #define LETTER_SIZE 2.5
 #define WORD_SIZE 1
@@ -49,6 +49,8 @@ typedef struct {
     SDL_Texture *tex_chiffres; SDL_Rect pos_chiffres[2];
     //Coeur
     SDL_Texture* tex_coeur; SDL_Rect size_coeur; SDL_Rect pos_coeur;
+    //Bordures
+    SDL_Texture* tex_bordures; SDL_Rect size_bordures; SDL_Rect pos_bordures; SDL_Rect size_word_bordures; SDL_Rect pos_word_bordures; SDL_Rect pos_notif_bordures; SDL_Rect size_notif_bordures;
     
     //Évènement
     SDL_Event event;
@@ -65,7 +67,7 @@ void exitWithError(char* error);
 void initLettresEtChiffres();
 void initWindow();
 SDL_Texture* loadSprite(char* sprite);
-void setSpritePos(int x, int y);
+void setSpritePos(int x, int y, SDL_Rect* rec);
 void setSpriteSize(int w, int h, SDL_Texture* tex, SDL_Rect* rec);
 void initVariables();
 void treatEvents(SDL_Event event);
@@ -77,5 +79,7 @@ void separeNum(int num, int *val);
 void initFoundLetters();
 void updateFoundLetters();
 void loadNotif(char* txt);
+void setWordBordure();
+void setNotifBordure(char* txt);
 
 #endif
