@@ -14,6 +14,8 @@ int myWindow()
     mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
     mwindow.tex_coeur = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\coeur.bmp");
     mwindow.tex_bordures = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bordures.bmp");
+    mwindow.tex_potence = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\potences.bmp");
+    mwindow.tex_pendu = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\pendus.bmp");
     setSpritePos((WINDOW_WIDTH-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)*0.85, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2, &mwindow.rectangle);
     setSpriteSize(mwindow.lettres[mwindow.lettre].w*LETTER_SIZE, mwindow.lettres[mwindow.lettre].h*LETTER_SIZE, mwindow.texture, &mwindow.rectangle);
     setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_bordures);
@@ -22,6 +24,14 @@ int myWindow()
     setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_word_bordures);
     setSpritePos(mwindow.rectangle.x - (mwindow.pos_bordures.w-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)/2, mwindow.rectangle.y - (mwindow.pos_bordures.h-mwindow.lettres[mwindow.lettre].h*LETTER_SIZE)/2, &mwindow.pos_bordures);
     setSpriteSize(-1, -1, mwindow.tex_coeur, &mwindow.size_coeur);
+    //Potence
+    setSpriteSize(1000, 1000, mwindow.tex_potence, &mwindow.size_potence);
+    setSpritePos(0, 150, &mwindow.pos_potence);
+    setSpriteSize(700, 700, mwindow.tex_potence, &mwindow.pos_potence);
+    //Pendu
+    setSpritePos(546-26, 150+244, &mwindow.pos_pendu);
+    setSpriteSize(144, 275, mwindow.tex_pendu, &mwindow.size_pendu);
+    setSpriteSize(mwindow.size_pendu.w*0.7, mwindow.size_pendu.h*0.7, mwindow.tex_pendu, &mwindow.pos_pendu);
     initVariables();
 
     //Chargement du mot
@@ -100,6 +110,93 @@ void display()
     printRenderer(mwindow.tex_chiffres, &mwindow.chiffres[chiffresVies[0]], &mwindow.pos_chiffres[1], 1);
     printRenderer(mwindow.texture, &mwindow.lettres[mwindow.lettre], &mwindow.rectangle, 1);
     printRenderer(mwindow.texture, mwindow.size_found, mwindow.pos_found, 26);
+    
+    int affichePendu = 10-jeu.lives;
+    switch(affichePendu)
+    {
+        case(1):
+            setSpritePos(1000*(affichePendu-1), 0, &mwindow.size_potence);
+            if(jeu.lettersFound == strlen(jeu.word)) mwindow.size_potence.y=1000*2;
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            break;
+        case(2):
+            setSpritePos(1000*(affichePendu-1), 0, &mwindow.size_potence);
+            if(jeu.lettersFound == strlen(jeu.word)) mwindow.size_potence.y=1000*2;
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            break;
+        case(3):
+            setSpritePos(1000*(affichePendu-1), 0, &mwindow.size_potence);
+            if(jeu.lettersFound == strlen(jeu.word)) mwindow.size_potence.y=1000*2;
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            break;
+        case(4):
+            setSpritePos(1000*(affichePendu-1), 0, &mwindow.size_potence);
+            if(jeu.lettersFound == strlen(jeu.word)) mwindow.size_potence.y=1000*2;
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            break;
+        case(5):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lettersFound == strlen(jeu.word))
+            {
+                mwindow.size_potence.y=1000*2;
+                mwindow.size_pendu.y=275*2;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        case(6):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lettersFound == strlen(jeu.word))
+            {
+                mwindow.size_potence.y=1000*2;
+                mwindow.size_pendu.y=275*2;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        case(7):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lettersFound == strlen(jeu.word))
+            {
+                mwindow.size_potence.y=1000*2;
+                mwindow.size_pendu.y=275*2;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        case(8):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lettersFound == strlen(jeu.word))
+            {
+                mwindow.size_potence.y=1000*2;
+                mwindow.size_pendu.y=275*2;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        case(9):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lettersFound == strlen(jeu.word))
+            {
+                mwindow.size_potence.y=1000*2;
+                mwindow.size_pendu.y=275*2;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        case(10):
+            setSpritePos(144*(affichePendu-5), 0, &mwindow.size_pendu);
+            if(jeu.lives == 0)
+            {
+                mwindow.size_potence.y=1000*1;
+                mwindow.size_pendu.y=275*1;
+            }
+            printRenderer(mwindow.tex_potence, &mwindow.size_potence, &mwindow.pos_potence, 1);
+            printRenderer(mwindow.tex_pendu, &mwindow.size_pendu, &mwindow.pos_pendu, 1);
+            break;
+        default:
+            break;
+    }
     SDL_RenderPresent(mwindow.renderer);
 }
 

@@ -51,7 +51,11 @@ typedef struct {
     SDL_Texture* tex_coeur; SDL_Rect size_coeur; SDL_Rect pos_coeur;
     //Bordures
     SDL_Texture* tex_bordures; SDL_Rect size_bordures; SDL_Rect pos_bordures; SDL_Rect size_word_bordures; SDL_Rect pos_word_bordures; SDL_Rect pos_notif_bordures; SDL_Rect size_notif_bordures;
-    
+    //Potence
+    SDL_Texture* tex_potence; SDL_Rect size_potence; SDL_Rect pos_potence;
+    //Pendu
+    SDL_Texture* tex_pendu; SDL_Rect size_pendu; SDL_Rect pos_pendu;
+
     //Évènement
     SDL_Event event;
     //Booléen d'arrêt de la fenêtre
