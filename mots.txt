@@ -104,7 +104,7 @@ peigne
 dessin
 art
 navette
-spacial
+spatial
 satellite
 pochette
 masque
