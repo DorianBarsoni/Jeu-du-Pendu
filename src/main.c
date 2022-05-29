@@ -1,4 +1,4 @@
-//gcc src/main.c src/dictionnaire.c src/jeu.c src/window.c -o bin/main -I include -L lib -lmingw32 -lSDL2main -lSDL2
+//gcc src/main.c src/dictionnaire.c src/jeu.c src/window.c -o bin/main -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_mixer
 
 #include <stdio.h>
 #include <stdlib.h>

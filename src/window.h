@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include <stdbool.h>
+#include <SDL_mixer.h>
 #include "jeu.h"
 #include "dictionnaire.h"
 
@@ -62,6 +63,9 @@ typedef struct {
     bool running;
     //Dernière lettre sélectionnée
     int lettre;
+
+    //Audio
+    Mix_Chunk *soundEffect[2];
 }Window;
 
 

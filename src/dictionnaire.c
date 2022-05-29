@@ -8,7 +8,8 @@ dictionnaire initDic()
 {
     dictionnaire dic;
 
-    FILE* fichier = fopen("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\mots.txt", "r");
+    //C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu
+    FILE* fichier = fopen("..\\mots.txt", "r");
     if(fichier == NULL) 
     {
         printf("No such file\n");
@@ -34,7 +35,7 @@ dictionnaire initDic()
     dic.dictionnaire = (char**) malloc(dic.taille*sizeof(char*));
 
     fclose(fichier);
-    fichier = fopen("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\mots.txt", "r");
+    fichier = fopen("..\\mots.txt", "r");
     if(fichier == NULL) 
     {
         printf("No such file\n");

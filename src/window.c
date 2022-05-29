@@ -7,15 +7,16 @@ bool notif_vie = false;
 
 int myWindow()
 {
+    //C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu
     initLettresEtChiffres();
     initFoundLetters();
     initWindow();
-    mwindow.texture = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\lettres.bmp");
-    mwindow.tex_chiffres = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\chiffres.bmp");
-    mwindow.tex_coeur = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\coeur.bmp");
-    mwindow.tex_bordures = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\bordures.bmp");
-    mwindow.tex_potence = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\potences.bmp");
-    mwindow.tex_pendu = loadSprite("C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu\\images\\pendus.bmp");
+    mwindow.texture = loadSprite("..\\images\\lettres.bmp");
+    mwindow.tex_chiffres = loadSprite("..\\images\\chiffres.bmp");
+    mwindow.tex_coeur = loadSprite("..\\images\\coeur.bmp");
+    mwindow.tex_bordures = loadSprite("..\\images\\bordures.bmp");
+    mwindow.tex_potence = loadSprite("..\\images\\potences.bmp");
+    mwindow.tex_pendu = loadSprite("..\\images\\pendus.bmp");
     setSpritePos((WINDOW_WIDTH-mwindow.lettres[mwindow.lettre].w*LETTER_SIZE)*0.85, WINDOW_HEIGHT/2 - mwindow.lettres[mwindow.lettre].h*LETTER_SIZE/2, &mwindow.rectangle);
     setSpriteSize(mwindow.lettres[mwindow.lettre].w*LETTER_SIZE, mwindow.lettres[mwindow.lettre].h*LETTER_SIZE, mwindow.texture, &mwindow.rectangle);
     setSpriteSize(167, 83, mwindow.tex_bordures, &mwindow.size_bordures);
@@ -33,6 +34,11 @@ int myWindow()
     setSpriteSize(144, 275, mwindow.tex_pendu, &mwindow.size_pendu);
     setSpriteSize(mwindow.size_pendu.w*0.7, mwindow.size_pendu.h*0.7, mwindow.tex_pendu, &mwindow.pos_pendu);
     initVariables();
+
+    mwindow.soundEffect[0] = Mix_LoadWAV("..\\audio\\correct.wav");
+    mwindow.soundEffect[1] = Mix_LoadWAV("..\\audio\\wrong.wav");
+    Mix_VolumeChunk(mwindow.soundEffect[0], 25);
+    Mix_VolumeChunk(mwindow.soundEffect[1], 25);
 
     //Chargement du mot
     jeu = initJeu();
@@ -56,11 +62,13 @@ int myWindow()
             {
                 setSpritePos(0,84,&mwindow.size_word_bordures);
                 for(int i=0; i<strlen(jeu.hiddenWord); i++) mwindow.word[i].y=58;
+                Mix_PlayChannel(-1, mwindow.soundEffect[1], 0);
             }
             else
             {
                 setSpritePos(0,168,&mwindow.size_word_bordures);
                 for(int i=0; i<strlen(jeu.hiddenWord); i++) mwindow.word[i].y=116;
+                Mix_PlayChannel(-1, mwindow.soundEffect[0], 0);
             }
             for(int i=0; i<2; i++)
             {
@@ -77,6 +85,7 @@ int myWindow()
             loadHiddenWord(jeu.hiddenWord);
             notif_vie = false;
         }
+        SDL_Delay(1);
     }
 
     printf("Le mot etait : %s\n", jeu.word);
@@ -91,6 +100,8 @@ int myWindow()
     SDL_DestroyTexture(mwindow.tex_bordures);
     SDL_DestroyRenderer(mwindow.renderer);
     SDL_DestroyWindow(mwindow.window);
+    for (int i=0; i<2; i++) Mix_FreeChunk(mwindow.soundEffect[i]);
+    Mix_Quit();
     SDL_Quit();
 
     return 1;
@@ -255,7 +266,10 @@ void initLettresEtChiffres()
 void initWindow()
 {
     //Initialisation de la SDL
-    if(SDL_Init(SDL_INIT_VIDEO) != 0) exitWithError("Initialisation Video");
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) exitWithError("Initialisation Video");
+
+    //Initialisation audio
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 2048)) exitWithError("Initialisation Audio");
 
     //Création de la fenêtre
     mwindow.window = NULL;
