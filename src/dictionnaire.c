@@ -10,7 +10,7 @@ dictionnaire initDic()
 
     //C:\\Users\\dbars\\Documents\\GitHub\\Jeu-du-Pendu
     FILE* fichier = fopen("..\\mots.txt", "r");
-    if(fichier == NULL) 
+    if(fichier == NULL)
     {
         printf("No such file\n");
         FILE* err = fopen("error.txt", "w");
